@@ -1,48 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Portal - Iqra Public School</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2e7d32; --bg: #f1f8e9; }
+        :root { --primary: #2e7d32; --bg: #f4f7f1; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .main-card { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; margin-bottom: 20px; border-top: 5px solid var(--primary); box-sizing: border-box; }
-        h2 { color: var(--primary); margin: 0; font-size: 22px; }
-        p { color: #666; margin: 0 0 20px 0; font-size: 13px; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; font-size: 15px; margin-bottom: 12px; background: #fafafa; font-weight: bold; }
-        .btn-check { background: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; }
-        #resultsArea { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
         
-        .attendance-card { background: white; margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); width: 100%; box-sizing: border-box; }
-        .student-photo { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; border: 2px solid #eee; margin-left: 15px; background: #f9f9f9; order: 2; }
+        /* Header Card */
+        .main-card { background: white; width: 100%; max-width: 420px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; margin-bottom: 20px; border-top: 6px solid var(--primary); box-sizing: border-box; }
+        h2 { color: var(--primary); margin: 0; font-size: 24px; letter-spacing: 1px; }
+        p { color: #666; margin: 5px 0 20px 0; font-size: 14px; }
+
+        select { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #eee; font-size: 15px; margin-bottom: 15px; background: #fafafa; font-weight: 600; color: #333; outline: none; transition: 0.3s; }
+        select:focus { border-color: var(--primary); }
+        
+        .btn-check { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2); transition: 0.3s; }
+        .btn-check:active { transform: scale(0.97); }
+
+        /* Attendance List Section */
+        #resultsArea { width: 100%; max-width: 420px; }
+        .attendance-card { background: white; margin-bottom: 15px; padding: 18px; border-radius: 18px; display: flex; align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.04); border-left: 6px solid var(--primary); animation: slideUp 0.5s ease; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Image on the Right */
+        .student-photo { width: 95px; height: 95px; border-radius: 15px; object-fit: cover; border: 2px solid #f0f0f0; margin-left: 15px; order: 2; background: #eee; }
+        
+        /* Details on the Left */
         .details { flex: 1; text-align: left; order: 1; }
-        .details b { color: #333; font-size: 14px; display: block; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .details b { color: #222; font-size: 15px; display: block; margin-bottom: 12px; border-bottom: 1.5px solid #f0f0f0; padding-bottom: 6px; text-transform: uppercase; }
         
-        .info-row { font-size: 12px; color: #444; margin-bottom: 8px; }
-        .label { font-weight: 600; color: #2e7d32; display: block; font-size: 11px; text-transform: uppercase; }
-        .time-val { font-family: monospace; font-size: 13px; color: #333; }
-        
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; display: none; }
+        .row { margin-bottom: 10px; }
+        .label { font-weight: 600; color: #2e7d32; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .val { font-family: 'Courier New', monospace; font-size: 13px; color: #444; font-weight: 700; margin-top: 2px; display: block; }
+
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="main-card">
-    <h2>Iqra Public School</h2>
-    <p>Parent Tracking Portal</p>
+    <h2>IQRA PUBLIC SCHOOL</h2>
+    <p>Attendance Tracking Portal</p>
     
     <select id="classList" onchange="loadStudents()">
         <option value="">-- SELECT CLASS --</option>
-        <option value="1">Class 1</option><option value="2">Class 2</option>
-        <option value="3">Class 3</option><option value="4">Class 4</option>
-        <option value="5">Class 5</option><option value="6">Class 6</option>
-        <option value="7">Class 7</option><option value="8">Class 8</option>
-        <option value="9">Class 9</option><option value="10">Class 10</option>
+        <option value="1">Class 1</option>
+        <option value="2">Class 2</option>
+        <option value="3">Class 3</option>
+        <option value="4">Class 4</option>
+        <option value="5">Class 5</option>
+        <option value="6">Class 6</option>
+        <option value="7">Class 7</option>
+        <option value="8">Class 8</option>
+        <option value="9">Class 9</option>
+        <option value="10">Class 10</option>
     </select>
     
-    <select id="sList"><option value="">-- SELECT STUDENT --</option></select>
+    <select id="sList"><option value="">-- FIRST SELECT CLASS --</option></select>
     
     <button class="btn-check" onclick="search()">VIEW ATTENDANCE</button>
     <div id="loader" class="loader"></div>
@@ -51,25 +70,33 @@
 <div id="resultsArea"></div>
 
 <script>
+    // === APNA GOOGLE SCRIPT URL YAHAN DALEIN ===
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; 
 
+    // 1. Students Load Karne Ka Function
     function loadStudents() {
         let classId = document.getElementById('classList').value;
         let sList = document.getElementById('sList');
         if(!classId) return;
+        
         sList.innerHTML = "<option>Loading Names...</option>";
         fetch(SCRIPT_URL + "?classId=" + classId)
         .then(res => res.json())
         .then(data => {
             sList.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
-            data.forEach(name => { sList.innerHTML += `<option value="${name}">${name}</option>`; });
-        });
+            data.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                sList.appendChild(opt);
+            });
+        }).catch(err => alert("Error loading names. Check Internet."));
     }
 
+    // 2. Attendance Search Function
     function search() {
         let classId = document.getElementById('classList').value;
         let name = document.getElementById('sList').value;
-        if(!classId || !name) return alert("Select Class and Student!");
+        if(!classId || !name) return alert("Please select Class and Student!");
 
         document.getElementById('resultsArea').innerHTML = "";
         document.getElementById('loader').style.display = "block";
@@ -81,38 +108,39 @@
             let html = "";
             
             if(!data || data.length === 0) {
-                html = "<p style='color:#666;'>No record found for today.</p>";
+                html = "<p style='color:#666; font-weight:600; margin-top:20px;'>No record found for today.</p>";
             } else {
                 data.forEach(row => {
-                    // --- DRIVE PHOTO URL FIX ---
-                    let rawUrl = row["Photo URL"] || row[6] || ""; 
-                    let imgUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                    // --- PHOTO URL FIXER ---
+                    // Index 6 is Column G (Photo URL)
+                    let driveUrl = row[6] || row.photo || "";
+                    let finalImg = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // Default Icon
                     
-                    if(rawUrl.includes("id=")) {
-                        let id = rawUrl.split("id=")[1].split("&")[0];
-                        imgUrl = "https://lh3.googleusercontent.com/d/" + id;
-                    } else if(rawUrl.includes("/d/")) {
-                        let id = rawUrl.split("/d/")[1].split("/")[0];
-                        imgUrl = "https://lh3.googleusercontent.com/d/" + id;
+                    if(driveUrl.includes("id=")) {
+                        let id = driveUrl.split("id=")[1].split("&")[0];
+                        finalImg = "https://lh3.googleusercontent.com/d/" + id;
+                    } else if(driveUrl.includes("/d/")) {
+                        let id = driveUrl.split("/d/")[1].split("/")[0];
+                        finalImg = "https://lh3.googleusercontent.com/d/" + id;
                     }
 
-                    // --- DATA MAPPING ---
-                    let sName = name; // Dropdown se liya gaya naam
-                    let sEntry = row["Entry Time"] || row[1] || "---";
-                    let sExit = row["Leaving Time"] || row[2] || "Inside School";
+                    // --- TIME MAPPING ---
+                    // Index 1 = Column B (Entry), Index 2 = Column C (Leaving)
+                    let entryTime = row[1] || "Not Recorded";
+                    let exitTime = row[2] || "School mein hai";
 
                     html += `
                     <div class="attendance-card">
-                        <img src="${imgUrl}" class="student-photo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <img src="${finalImg}" class="student-photo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <div class="details">
-                            <b>${sName}</b>
-                            <div class="info-row">
+                            <b>${name}</b>
+                            <div class="row">
                                 <span class="label">Check-In:</span>
-                                <span class="time-val">${sEntry}</span>
+                                <span class="val">${entryTime}</span>
                             </div>
-                            <div class="info-row">
+                            <div class="row">
                                 <span class="label">Check-Out:</span>
-                                <span class="time-val">${sExit}</span>
+                                <span class="val">${exitTime}</span>
                             </div>
                         </div>
                     </div>`;
@@ -122,9 +150,10 @@
         })
         .catch(err => {
             document.getElementById('loader').style.display = "none";
-            alert("Connection Error!");
+            alert("Network error! Try again.");
         });
     }
 </script>
+
 </body>
 </html>
