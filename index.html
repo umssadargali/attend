@@ -9,6 +9,7 @@
         h2 { color: #2e7d32; margin: 5px 0; font-size: 20px; }
         #clock { font-size: 36px; font-weight: bold; color: #ff5722; margin: 5px 0; }
         select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; font-weight: bold; border: 1px solid #2e7d32; }
+        /* Camera Box Fix for Sketchware */
         .cam-box { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #ccc; aspect-ratio: 4/3; margin-bottom: 10px; background: #000; position: relative; }
         video, img { width: 100%; height: 100%; object-fit: cover; }
         button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; margin-bottom: 8px; cursor: pointer; }
@@ -34,9 +35,9 @@
 
     <select id="sList"><option value="">-- SELECT STUDENT --</option></select>
 
-    <div class="cam-box">
-        <video id="v" autoplay playsinline muted></video>
+    <div class="cam-box" onclick="startCam()"> <video id="v" autoplay playsinline muted></video>
         <img id="p" style="display:none;">
+        <div id="camMsg" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:12px; pointer-events:none;">Tap to start Camera</div>
     </div>
     
     <div id="ctrls">
@@ -57,52 +58,56 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; 
 
-    // 1. Clock
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 
-    // 2. Camera Fix (Force Start)
     let v = document.getElementById('v'), b64 = "";
-    function startCam() {
-        navigator.mediaDevices.getUserMedia({video:{facingMode:"user", width: 400}}).then(s => {
-            v.srcObject = s;
-            v.play();
-        }).catch(e => { document.getElementById('status').innerText = "Camera Error! Please refresh."; });
-    }
-    startCam();
-
-    // 3. Class Memory & Load
-    window.onload = () => {
-        const savedClass = localStorage.getItem('lastClass');
-        if(savedClass) {
-            document.getElementById('classList').value = savedClass;
-            loadStudents();
+    
+    // Sketchware Fix: Manual start trigger
+    async function startCam() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
+            v.srcObject = stream;
+            v.onloadedmetadata = () => {
+                v.play();
+                document.getElementById('camMsg').style.display = "none";
+            };
+        } catch (e) {
+            alert("Camera Access Denied! Please check app permissions.");
         }
+    }
+
+    // Try starting automatically
+    window.onload = () => {
+        startCam();
+        const sc = localStorage.getItem('lc');
+        if(sc) { document.getElementById('classList').value = sc; loadStudents(); }
     };
 
     function loadStudents() {
-        let classId = document.getElementById('classList').value;
-        if(!classId) return;
-        localStorage.setItem('lastClass', classId);
-        let sList = document.getElementById('sList');
-        sList.innerHTML = "<option>Loading...</option>";
-        fetch(SCRIPT_URL + "?classId=" + classId).then(r => r.json()).then(data => {
-            sList.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
-            data.forEach(n => sList.innerHTML += `<option value="${n}">${n}</option>`);
+        let cid = document.getElementById('classList').value;
+        if(!cid) return;
+        localStorage.setItem('lc', cid);
+        let sl = document.getElementById('sList');
+        sl.innerHTML = "<option>Loading...</option>";
+        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(d => {
+            sl.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
+            d.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
         });
     }
 
     function snap() {
+        if(!v.srcObject) return alert("Pehle camera start hone dein!");
         const cn = document.getElementById('c');
         cn.width = 300; cn.height = 225;
         cn.getContext('2d').drawImage(v, 0, 0, 300, 225);
-        b64 = cn.toDataURL('image/jpeg', 0.3); 
+        b64 = cn.toDataURL('image/jpeg', 0.4); 
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; v.style.display = "none";
         document.getElementById('snBtn').innerText = "🔄 RETAKE";
     }
 
     function send(t) {
-        const cId = document.getElementById('classList').value;
+        const cid = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
         if(!name) return alert("Student select karein!");
         if(t === 'check-in' && !b64) return alert("Photo lein!");
@@ -111,20 +116,24 @@
         document.getElementById('status').innerText = "🚀 Sending...";
 
         navigator.geolocation.getCurrentPosition(pos => {
-            // Speed Trick: Send and Alert immediately (No-Cors)
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({classId: cId, name: name, type: t, location: pos.coords.latitude+","+pos.coords.longitude, photo: b64})
+                body: JSON.stringify({classId: cid, name: name, type: t, location: pos.coords.latitude+","+pos.coords.longitude, photo: b64})
             });
             
-            alert("Attendance Sent!");
-            // Quick Reset (No Reload)
-            b64 = ""; document.getElementById('p').style.display = "none"; v.style.display = "block";
-            document.getElementById('ctrls').style.display = "block";
-            document.getElementById('status').innerText = "Ready";
-            document.getElementById('snBtn').innerText = "📸 TAKE PHOTO";
-            document.getElementById('sList').value = "";
-        }, () => { alert("GPS ON karein!"); location.reload(); });
+            setTimeout(() => {
+                alert("Attendance Recorded!");
+                resetUI();
+            }, 1000);
+        }, () => { alert("GPS ON karein!"); resetUI(); });
+    }
+
+    function resetUI() {
+        b64 = ""; document.getElementById('p').style.display = "none"; v.style.display = "block";
+        document.getElementById('ctrls').style.display = "block";
+        document.getElementById('status').innerText = "Ready";
+        document.getElementById('snBtn').innerText = "📸 TAKE PHOTO";
+        document.getElementById('sList').value = "";
     }
 </script>
 </body>
