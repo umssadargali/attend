@@ -6,52 +6,63 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 15px; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { color: #2e7d32; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #2e7d32; text-align: center; margin-bottom: 5px; text-transform: uppercase; }
+        .sub-t { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
         
-        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .stat-box { text-align: center; background: #e8f5e9; padding: 10px; border-radius: 10px; flex: 1; margin: 0 5px; }
-        .stat-box span { display: block; font-size: 22px; font-weight: bold; color: #2e7d32; }
-        .stat-box label { font-size: 12px; color: #666; text-transform: uppercase; }
+        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; gap: 10px; }
+        .stat-box { text-align: center; background: #e8f5e9; padding: 12px; border-radius: 10px; flex: 1; border: 1px solid #c8e6c9; }
+        .stat-box span { display: block; font-size: 24px; font-weight: bold; color: #2e7d32; }
+        .stat-box label { font-size: 11px; color: #555; text-transform: uppercase; font-weight: bold; }
 
-        #search { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        #search { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
 
+        .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f4f4f4; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        .img-preview { width: 45px; height: 45px; border-radius: 5px; object-fit: cover; cursor: pointer; border: 1px solid #ddd; }
-        .status-in { color: #2e7d32; font-weight: bold; }
-        .status-out { color: #666; }
+        th { background: #2e7d32; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
+        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        
+        .img-preview { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1px solid #ccc; transition: 0.2s; }
+        .img-preview:hover { transform: scale(1.1); }
+        
+        .status-in { color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 2px 6px; border-radius: 4px; }
+        .status-out { color: #d32f2f; font-weight: bold; background: #ffebee; padding: 2px 6px; border-radius: 4px; }
+        
+        .refresh-msg { text-align: center; font-size: 10px; color: #aaa; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Admin Dashboard</h2>
+    <h2>Admin Panel</h2>
+    <div class="sub-t">Iqra Public School Attendance Tracking</div>
     
     <div class="stats">
-        <div class="stat-box"><span id="total">0</span><label>Total</label></div>
-        <div class="stat-box"><span id="present" style="color:#ff9800;">0</span><label>Still In</label></div>
+        <div class="stat-box"><span id="total">0</span><label>Total Today</label></div>
+        <div class="stat-box"><span id="present" style="color:#2e7d32;">0</span><label>Still In</label></div>
         <div class="stat-box"><span id="away" style="color:#f44336;">0</span><label>Went Out</label></div>
     </div>
 
-    <input type="text" id="search" placeholder="Search student name..." onkeyup="filterTable()">
+    <input type="text" id="search" placeholder="🔍 Search student by name..." onkeyup="filterTable()">
 
-    <table id="adminTable">
-        <thead>
-            <tr>
-                <th>Student</th>
-                <th>In/Out Time</th>
-                <th>Photo</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            <tr><td colspan="3" style="text-align:center;">Loading today's data...</td></tr>
-        </tbody>
-    </table>
+    <div class="table-wrapper">
+        <table id="adminTable">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>In / Out Time</th>
+                    <th>Photo</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="3" style="text-align:center; padding: 30px;">Loading live data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="refresh-msg">Auto-refreshes every 30 seconds</div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7_gDby9hIutrnZ3p8iiTYqLvNZVvbX77N_-G78yANy3DzQ45SHlqcLtSrI1mjNbM/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfL1sqQqt-33xQ9cla0T6--XNTd4KktgZPY8pG436V7QZhcbIz76Y1TcbtWYXIBPke/exec"; // <--- Same URL as index.html
 
     async function loadData() {
         try {
@@ -65,27 +76,31 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = "";
 
-            if(data.list.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No attendance today.</td></tr>";
+            if(!data.list || data.list.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 20px;'>No entries found for today.</td></tr>";
                 return;
             }
 
-            data.list.reverse().forEach(item => {
-                let outDisp = item.out === "Inside" ? "<span class='status-in'>School mein hai</span>" : item.out;
+            data.list.forEach(item => {
+                let statusHtml = item.out === "Inside" 
+                    ? `<span class="status-in">School In</span>` 
+                    : `<span class="status-out">Out: ${item.out}</span>`;
+
                 tbody.innerHTML += `
                     <tr>
                         <td><b>${item.name}</b></td>
-                        <td>In: ${item.in}<br>Out: ${outDisp}</td>
+                        <td>In: ${item.in}<br>${statusHtml}</td>
                         <td>
-                            ${item.pic !== "No Photo" && item.pic !== "Error" ? 
+                            ${item.pic && item.pic !== "No Photo" && item.pic !== "Error" ? 
                             `<img src="${item.pic}" class="img-preview" onclick="window.open('${item.pic}')">` : 
-                            `<small>No Photo</small>`}
+                            `<small style="color:#999;">No Photo</small>`}
                         </td>
                     </tr>
                 `;
             });
         } catch (e) {
-            document.getElementById('tableBody').innerHTML = "<tr><td colspan='3' style='color:red;'>Error loading data!</td></tr>";
+            console.error(e);
+            document.getElementById('tableBody').innerHTML = "<tr><td colspan='3' style='color:red; text-align:center;'>Unable to connect to Server.</td></tr>";
         }
     }
 
@@ -101,7 +116,11 @@
         }
     }
 
+    // Load data initially
     loadData();
+    
+    // Auto Refresh every 30 seconds
+    setInterval(loadData, 30000);
 </script>
 </body>
 </html>
