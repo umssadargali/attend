@@ -2,105 +2,123 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Iqra Public School</title>
+    <title>Iqra Admin - Multi-Class</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 15px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { color: #2e7d32; text-align: center; margin-bottom: 5px; text-transform: uppercase; }
-        .sub-t { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #2e7d32; text-align: center; margin-bottom: 10px; }
         
-        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; gap: 10px; }
-        .stat-box { text-align: center; background: #e8f5e9; padding: 12px; border-radius: 10px; flex: 1; border: 1px solid #c8e6c9; }
-        .stat-box span { display: block; font-size: 24px; font-weight: bold; color: #2e7d32; }
-        .stat-box label { font-size: 11px; color: #555; text-transform: uppercase; font-weight: bold; }
+        /* Fast Loading Styles */
+        select, input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; font-weight: bold; }
+        
+        .stats { display: flex; justify-content: space-around; margin-bottom: 15px; gap: 8px; }
+        .stat-box { text-align: center; background: #e8f5e9; padding: 10px; border-radius: 10px; flex: 1; border: 1px solid #c8e6c9; }
+        .stat-box span { display: block; font-size: 20px; font-weight: bold; color: #2e7d32; }
+        .stat-box label { font-size: 10px; color: #666; text-transform: uppercase; }
 
-        #search { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-
-        .table-wrapper { overflow-x: auto; }
+        .table-wrapper { overflow-x: auto; max-height: 500px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #2e7d32; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
-        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        th { background: #2e7d32; color: white; padding: 10px; text-align: left; position: sticky; top: 0; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
         
-        .img-preview { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1px solid #ccc; transition: 0.2s; }
-        .img-preview:hover { transform: scale(1.1); }
-        
-        .status-in { color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 2px 6px; border-radius: 4px; }
-        .status-out { color: #d32f2f; font-weight: bold; background: #ffebee; padding: 2px 6px; border-radius: 4px; }
-        
-        .refresh-msg { text-align: center; font-size: 10px; color: #aaa; margin-top: 10px; }
+        /* Low-Res Optimized Photo Styles */
+        .img-preview { 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 5px; 
+            object-fit: cover; 
+            background: #eee;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+        .status-in { color: #2e7d32; font-weight: bold; font-size: 11px; }
+        .status-out { color: #d32f2f; font-weight: bold; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Admin Panel</h2>
-    <div class="sub-t">Iqra Public School Attendance Tracking</div>
+    <h2>Admin Dashboard</h2>
     
+    <select id="classPicker" onchange="loadAdminData()">
+        <option value="">-- SELECT CLASS TO VIEW --</option>
+    </select>
+
     <div class="stats">
-        <div class="stat-box"><span id="total">0</span><label>Total Today</label></div>
-        <div class="stat-box"><span id="present" style="color:#2e7d32;">0</span><label>Still In</label></div>
-        <div class="stat-box"><span id="away" style="color:#f44336;">0</span><label>Went Out</label></div>
+        <div class="stat-box"><span id="total">0</span><label>Today</label></div>
+        <div class="stat-box"><span id="present" style="color:#2e7d32;">0</span><label>In</label></div>
+        <div class="stat-box"><span id="away" style="color:#f44336;">0</span><label>Out</label></div>
     </div>
 
-    <input type="text" id="search" placeholder="🔍 Search student by name..." onkeyup="filterTable()">
+    <input type="text" id="search" placeholder="🔍 Search student..." onkeyup="filterTable()">
 
     <div class="table-wrapper">
-        <table id="adminTable">
+        <table>
             <thead>
                 <tr>
-                    <th>Student Name</th>
-                    <th>In / Out Time</th>
+                    <th>Student</th>
+                    <th>Status</th>
                     <th>Photo</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr><td colspan="3" style="text-align:center; padding: 30px;">Loading live data...</td></tr>
+                <tr><td colspan="3" style="text-align:center; padding:20px;">Select a class to load data.</td></tr>
             </tbody>
         </table>
     </div>
-    <div class="refresh-msg">Auto-refreshes every 30 seconds</div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfL1sqQqt-33xQ9cla0T6--XNTd4KktgZPY8pG436V7QZhcbIz76Y1TcbtWYXIBPke/exec"; // <--- Same URL as index.html
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; // <--- Apna Google Script URL yahan dalein
 
-    async function loadData() {
+    // 1. Load Classes on startup
+    fetch(SCRIPT_URL + "?getClasses=true").then(r => r.json()).then(classes => {
+        let cp = document.getElementById('classPicker');
+        classes.sort((a,b)=>a-b).forEach(c => cp.innerHTML += `<option value="${c}">Class ${c}</option>`);
+    });
+
+    // 2. Load Admin Data for specific Class
+    async function loadAdminData() {
+        let classId = document.getElementById('classPicker').value;
+        if(!classId) return;
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Loading Fast...</td></tr>";
+
         try {
-            const response = await fetch(SCRIPT_URL + "?admin=true");
+            // Humne Backend mein pehle hi logic likha hai jo D1, D2 se data layega
+            const response = await fetch(SCRIPT_URL + "?admin=true&classId=" + classId);
             const data = await response.json();
             
             document.getElementById('total').innerText = data.total;
             document.getElementById('present').innerText = data.in;
             document.getElementById('away').innerText = data.out;
 
-            const tbody = document.getElementById('tableBody');
             tbody.innerHTML = "";
-
-            if(!data.list || data.list.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 20px;'>No entries found for today.</td></tr>";
+            if(data.list.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No data for today.</td></tr>";
                 return;
             }
 
             data.list.forEach(item => {
-                let statusHtml = item.out === "Inside" 
-                    ? `<span class="status-in">School In</span>` 
+                let statusMsg = item.out === "Inside" 
+                    ? `<span class="status-in">School Mein Hai</span>` 
                     : `<span class="status-out">Out: ${item.out}</span>`;
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><b>${item.name}</b></td>
-                        <td>In: ${item.in}<br>${statusHtml}</td>
+                        <td><b>${item.name}</b><br><small>In: ${item.in}</small></td>
+                        <td>${statusMsg}</td>
                         <td>
-                            ${item.pic && item.pic !== "No Photo" && item.pic !== "Error" ? 
-                            `<img src="${item.pic}" class="img-preview" onclick="window.open('${item.pic}')">` : 
-                            `<small style="color:#999;">No Photo</small>`}
+                            ${item.pic && item.pic !== "No Photo" ? 
+                            `<img src="${item.pic}" class="img-preview" loading="lazy" onclick="window.open('${item.pic}')">` : 
+                            `<small>No Pic</small>`}
                         </td>
                     </tr>
                 `;
             });
         } catch (e) {
-            console.error(e);
-            document.getElementById('tableBody').innerHTML = "<tr><td colspan='3' style='color:red; text-align:center;'>Unable to connect to Server.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='3' style='color:red; text-align:center;'>Error loading data!</td></tr>";
         }
     }
 
@@ -108,19 +126,13 @@
         let input = document.getElementById("search").value.toUpperCase();
         let rows = document.getElementById("tableBody").getElementsByTagName("tr");
         for (let i = 0; i < rows.length; i++) {
-            let name = rows[i].getElementsByTagName("td")[0];
-            if (name) {
-                let text = name.textContent || name.innerText;
+            let nameCell = rows[i].getElementsByTagName("td")[0];
+            if (nameCell) {
+                let text = nameCell.textContent || nameCell.innerText;
                 rows[i].style.display = text.toUpperCase().indexOf(input) > -1 ? "" : "none";
             }
         }
     }
-
-    // Load data initially
-    loadData();
-    
-    // Auto Refresh every 30 seconds
-    setInterval(loadData, 30000);
 </script>
 </body>
 </html>
