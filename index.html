@@ -1,129 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iqra Public School Attendance</title>
-    <style>
-        /* Aapka Original Design */
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(to right, #ffffff, #e8f5e9);
-            margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-        }
-        h3 { color: #4CAF50; font-size: 28px; margin: 10px 0; }
-        .extra-line { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
-        #clock {
-            font-size: 60px; font-weight: bold;
-            font-family: 'Courier New', monospace;
-            color: #ff5722;
-            background: linear-gradient(to right, #ff5722, #ff9800, #ff5722);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        #date { font-size: 20px; font-weight: 500; color: #555; margin-bottom: 20px; }
-        select, button {
-            font-size: 16px; padding: 12px; width: 260px;
-            margin-bottom: 15px; border-radius: 8px; border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); outline: none;
-        }
-        button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; }
-        video, #photo { 
-            width: 300px; height: 200px; border-radius: 10px; 
-            border: 2px solid #ddd; background: #000;
-        }
-        .footer { margin-top: 20px; font-size: 14px; color: #777; text-align: center; }
-    </style>
+<base target="_top">
+<style>
+/* Aapka Purana Styling Bilkul Waisa Hi Hai */
+body { font-family: 'Roboto', sans-serif; background: linear-gradient(to right, #ffffff, #e8f5e9); margin: 0; padding-top: 50px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+h3 { color: #4CAF50; font-size: 28px; margin: 20px 0; }
+#clock { font-size: 60px; font-weight: bold; font-family: 'Courier New', monospace; color: #ff5722; background: linear-gradient(to right, #ff5722, #ff9800, #ff5722); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
+#date { font-size: 20px; color: #555; margin-bottom: 20px; }
+select, button { font-size: 16px; padding: 12px; width: 280px; margin-bottom: 15px; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; }
+#photo { display: none; width: 300px; border-radius: 8px; margin-top: 10px; border: 2px solid #4CAF50; }
+.footer { margin-top: 20px; font-size: 12px; color: #777; text-align: center; }
+</style>
 </head>
 <body>
+<h3>Iqra Public School</h3>
+<div style="font-weight:bold; margin-bottom:10px;">Students Attendance System</div>
 
-    <h3>Iqra Public School</h3>
-    <div class="extra-line">Students Attendance System</div>
+<div id="clock">00:00:00</div>
+<div id="date">Loading...</div>
 
-    <div id="clock">--:--:--</div>
-    <div id="date">Loading date...</div>
+<label>Select Student:</label>
+<select id="teacherSelect"><option>Loading...</option></select>
 
-    <label>Select Student:</label>
-    <select id="teacherSelect"><option>Loading Students...</option></select>
+<div id="camera">
+    <video id="video" autoplay playsinline width="300" height="225" style="border-radius: 8px; background:#000;"></video>
+    <br>
+    <button onclick="capturePhoto()" style="background:#673ab7;">Capture Photo</button>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <img id="photo">
+</div>
 
-    <div id="camera">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <img id="photo" style="display:none;">
-        <br>
-        <button onclick="capturePhoto()" style="margin-top:10px;">Capture Photo</button>
-    </div>
+<button onclick="submitAttendance('check-in')">School-In</button>
+<button onclick="submitAttendance('check-out')" style="background:#ff5722;">School-Out</button>
 
-    <button onclick="submitAttendance('check-in')">School-In</button>
-    <button onclick="submitAttendance('check-out')" style="background-color: #f44336;">School-Out</button>
-
-    <div class="footer">Created and Designed by Riyaz Ahmad PGT Zoology</div>
+<div id="status" style="color:blue; font-weight:bold;"></div>
+<div class="footer">Created and Designed by Riyaz Ahmad PGT Zoology</div>
 
 <script>
-    // 1. Yahan apna naya Google Script URL dalein
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyj4qLKsdcHZwTMvp1bamTdompO5WdSvc4AzgT91E1QIdIXBCqJboPb4htVjhj079ib/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsFahB1EHS9syrOngV2nuDAPJ-d3P8dluTptapVwyWdNWZBevcyYbP7hBDBvAHgdON/exec"; // <--- APNA URL YAHAN DALEIN
 
-    // 2. Digital Clock
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB');
-        document.getElementById('date').textContent = now.toDateString();
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString();
+    document.getElementById('date').textContent = now.toDateString();
+}
+setInterval(updateClock, 1000);
+updateClock();
 
-    // 3. Load Student List (CORS Fix)
-    fetch(SCRIPT_URL + "?get=students")
-        .then(res => res.json())
-        .then(data => {
-            const select = document.getElementById('teacherSelect');
-            select.innerHTML = '<option value="">-- Select Student --</option>';
-            data.forEach(name => {
-                let opt = document.createElement('option');
-                opt.value = name; opt.textContent = name;
-                select.appendChild(opt);
-            });
-        })
-        .catch(err => console.log("Error loading students: ", err));
+// Fetch Student List from Google Sheet
+fetch(SCRIPT_URL + "?getNames=true")
+    .then(r => r.json())
+    .then(list => {
+        const select = document.getElementById('teacherSelect');
+        select.innerHTML = "";
+        list.forEach(n => { let o = document.createElement('option'); o.value = n; o.textContent = n; select.appendChild(o); });
+    });
 
-    // 4. Camera Start (Direct Access)
-    let photoBase64 = "";
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-        .then(stream => { document.getElementById('video').srcObject = stream; })
-        .catch(err => alert("Camera Error: " + err));
+// Direct Camera Access
+const video = document.getElementById('video');
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+    .then(stream => video.srcObject = stream)
+    .catch(err => alert("Camera Error: " + err));
 
-    function capturePhoto() {
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        photoBase64 = canvas.toDataURL('image/png');
-        document.getElementById('photo').src = photoBase64;
-        document.getElementById('photo').style.display = 'block';
-        document.getElementById('video').style.display = 'none';
-    }
+let capturedPhoto = "";
+function capturePhoto() {
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    capturedPhoto = canvas.toDataURL('image/jpeg', 0.5);
+    document.getElementById('photo').src = capturedPhoto;
+    document.getElementById('photo').style.display = "block";
+    video.style.display = "none";
+}
 
-    function submitAttendance(type) {
-        const name = document.getElementById('teacherSelect').value;
-        if (!name) return alert("Pehle Student chunein!");
-        if (type === 'check-in' && !photoBase64) return alert("Photo kheechna zaroori hai!");
-
-        navigator.geolocation.getCurrentPosition(pos => {
-            const loc = `${pos.coords.latitude}, ${pos.coords.longitude}`;
-            
-            fetch(SCRIPT_URL, {
-                method: "POST",
-                body: JSON.stringify({ name: name, type: type, location: loc, photo: photoBase64 })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if(res.result === "success") alert("Attendance Recorded!");
-                else alert("Error: " + res.error);
-            });
-        }, err => alert("Location error: " + err.message));
-    }
+function submitAttendance(type) {
+    const name = document.getElementById('teacherSelect').value;
+    if(!capturedPhoto && type === 'check-in') return alert("Pehle photo kheenchiye!");
+    
+    document.getElementById('status').innerText = "Saving... Please wait.";
+    
+    navigator.geolocation.getCurrentPosition(pos => {
+        const loc = pos.coords.latitude + "," + pos.coords.longitude;
+        const payload = { name: name, type: type, location: loc, photo: capturedPhoto };
+        
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(() => { alert("Attendance Success!"); location.reload(); })
+        .catch(e => alert("Error: " + e));
+    });
+}
 </script>
 </body>
 </html>
