@@ -7,31 +7,19 @@
     <style>
         :root { --primary: #2e7d32; --secondary: #4caf50; --bg: #f1f8e9; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        
         .main-card { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; margin-bottom: 20px; box-sizing: border-box; border-top: 5px solid var(--primary); }
         h2 { color: var(--primary); margin: 0 0 5px 0; font-size: 22px; }
         p { color: #666; margin: 0 0 20px 0; font-size: 13px; }
-
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; font-size: 15px; outline: none; margin-bottom: 12px; background: #fafafa; font-weight: bold; color: #333; }
-        select:focus { border-color: var(--primary); }
-        
-        .btn-check { background: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.3s; }
-        .btn-check:active { transform: scale(0.98); }
-
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; font-size: 15px; outline: none; margin-bottom: 12px; background: #fafafa; font-weight: bold; }
+        .btn-check { background: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; }
         #resultsArea { width: 100%; max-width: 400px; }
-        .attendance-card { background: white; margin-bottom: 12px; padding: 12px; border-radius: 16px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); animation: slideUp 0.4s ease-out; }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        .student-photo { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 1px solid #ddd; margin-right: 15px; background: #eee; }
+        .attendance-card { background: white; margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); }
+        .student-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; margin-right: 15px; background: #eee; }
         .details { flex: 1; text-align: left; }
-        .details b { color: #333; font-size: 14px; display: block; }
-        .details span { color: #555; font-size: 13px; display: block; margin-bottom: 5px; }
-        
-        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; margin-top: 4px; }
-        .in { background: #e8f5e9; color: #2e7d32; }
-        .out { background: #ffebee; color: #c62828; }
-
+        .details b { color: #333; font-size: 16px; display: block; margin-bottom: 5px; }
+        .label-in { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .label-out { background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .time-text { font-size: 14px; color: #555; margin: 4px 0 8px 0; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -51,9 +39,7 @@
         <option value="9">Class 9</option><option value="10">Class 10</option>
     </select>
     
-    <select id="sList">
-        <option value="">-- FIRST SELECT CLASS --</option>
-    </select>
+    <select id="sList"><option value="">-- SELECT STUDENT --</option></select>
     
     <button class="btn-check" onclick="search()">VIEW ATTENDANCE</button>
     <div id="loader" class="loader"></div>
@@ -64,34 +50,27 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; 
 
-    // 1. Load Students based on Class
     function loadStudents() {
         let classId = document.getElementById('classList').value;
         let sList = document.getElementById('sList');
         if(!classId) return;
-        
-        sList.innerHTML = "<option>Loading Names...</option>";
+        sList.innerHTML = "<option>Loading...</option>";
         fetch(SCRIPT_URL + "?classId=" + classId)
         .then(res => res.json())
         .then(data => {
-            sList.innerHTML = "<option value=''>-- SELECT STUDENT NAME --</option>";
-            data.forEach(name => {
-                sList.innerHTML += `<option value="${name}">${name}</option>`;
-            });
+            sList.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
+            data.forEach(name => { sList.innerHTML += `<option value="${name}">${name}</option>`; });
         });
     }
 
-    // 2. Search Attendance
     function search() {
         let classId = document.getElementById('classList').value;
         let name = document.getElementById('sList').value;
-        
         if(!classId || !name) return alert("Pehle Class aur Student chunein!");
 
         document.getElementById('resultsArea').innerHTML = "";
         document.getElementById('loader').style.display = "block";
 
-        // Hum "getAttendance" call karenge jo D1, D2 etc se data layega
         fetch(SCRIPT_URL + "?getAttendance=true&classId=" + classId + "&name=" + encodeURIComponent(name))
         .then(res => res.json())
         .then(data => {
@@ -99,21 +78,24 @@
             let html = "";
             
             if(!data || data.length === 0) {
-                html = "<p style='text-align:center; color:#666;'>No records found for today.</p>";
+                html = "<p style='text-align:center; color:#666;'>Aaj ka koi record nahi mila.</p>";
             } else {
                 data.forEach(row => {
-                    // Photo Logic
-                    let pic = (row.photo && row.photo.includes("http")) ? row.photo : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                    // Check for undefined and fix keys
+                    let sName = row.name || row.Name || name;
+                    let sEntry = row.entry || row.Entry || row.in || "---";
+                    let sExit = row.exit || row.Exit || row.out || "Inside School";
+                    let pic = row.photo || row.Photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                     
                     html += `
                     <div class="attendance-card">
-                        <img src="${pic}" class="student-photo" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <img src="${pic}" class="student-photo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <div class="details">
-                            <b>${row.name}</b>
-                            <span class="status-badge in">Entry Time</span>
-                            <span>${row.entry || '---'}</span>
-                            <span class="status-badge out">Exit Time</span>
-                            <span>${row.exit || 'Inside School'}</span>
+                            <b>${sName}</b>
+                            <div class="label-in">Entry Time</div>
+                            <div class="time-text">${sEntry}</div>
+                            <div class="label-out">Exit Time</div>
+                            <div class="time-text">${sExit}</div>
                         </div>
                     </div>`;
                 });
@@ -122,10 +104,9 @@
         })
         .catch(err => {
             document.getElementById('loader').style.display = "none";
-            alert("Connection Error!");
+            alert("Error: Data load nahi ho paya.");
         });
     }
 </script>
-
 </body>
 </html>
