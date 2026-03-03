@@ -2,19 +2,24 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IQRA Fast Attendance</title>
+    <title>IQRA PUBLIC SCHOOL Attendance</title>
     <style>
-        body { font-family: sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; width: 100%; max-width: 360px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #2e7d32; }
-        h2 { color: #2e7d32; margin: 5px 0; font-size: 20px; }
-        #clock { font-size: 36px; font-weight: bold; color: #ff5722; margin: 5px 0; }
-        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; font-weight: bold; border: 1px solid #2e7d32; }
-        /* Camera Box Fix for Sketchware */
+        h2 { color: #2e7d32; margin: 5px 0; font-size: 20px; text-transform: uppercase; }
+        #clock { font-size: 36px; font-weight: bold; color: #ff5722; margin: 5px 0; font-family: monospace; }
+        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; font-weight: bold; border: 2px solid #2e7d32; background: #fff; }
+        
         .cam-box { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #ccc; aspect-ratio: 4/3; margin-bottom: 10px; background: #000; position: relative; }
         video, img { width: 100%; height: 100%; object-fit: cover; }
+        
         button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; margin-bottom: 8px; cursor: pointer; }
         .b-snap { background: #673ab7; } .b-in { background: #4CAF50; } .b-out { background: #f44336; }
-        #status { font-weight: bold; color: #333; margin: 10px 0; }
+        .b-reset { background: #555; font-size: 12px; padding: 8px; margin-bottom: 10px; width: auto; min-width: 150px; }
+        
+        #status { font-weight: bold; margin: 10px 0; min-height: 25px; transition: 0.3s; }
+        .success-msg { color: #2e7d32; font-size: 20px; display: block; padding: 5px; border-radius: 5px; background: #e8f5e9; border: 1px solid #c8e6c9; }
+        
         .footer { font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
@@ -24,7 +29,7 @@
     <h2>IQRA PUBLIC SCHOOL</h2>
     <div id="clock">00:00:00</div>
     
-    <select id="classList" onchange="loadStudents()">
+    <select id="classList" onchange="saveClassAndLoad()">
         <option value="">-- SELECT CLASS --</option>
         <option value="1">Class 1</option><option value="2">Class 2</option>
         <option value="3">Class 3</option><option value="4">Class 4</option>
@@ -35,9 +40,11 @@
 
     <select id="sList"><option value="">-- SELECT STUDENT --</option></select>
 
-    <div class="cam-box" onclick="startCam()"> <video id="v" autoplay playsinline muted></video>
+    <button class="b-reset" onclick="startCam()">🔄 Reset Camera if Black</button>
+
+    <div class="cam-box">
+        <video id="v" autoplay playsinline muted></video>
         <img id="p" style="display:none;">
-        <div id="camMsg" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:12px; pointer-events:none;">Tap to start Camera</div>
     </div>
     
     <div id="ctrls">
@@ -45,10 +52,11 @@
         <button class="b-in" onclick="send('check-in')">SCHOOL-IN</button>
         <button class="b-out" onclick="send('check-out')">SCHOOL-OUT</button>
     </div>
+
     <div id="status">Ready</div>
 
     <div class="footer">
-        Location and camera permissions are required.<br>
+        Location and camera permissions required.<br>
         <b>Created by Riyaz Ahmad, PGT Zoology</b>
     </div>
 </div>
@@ -58,62 +66,69 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; 
 
+    // 1. Clock
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 
-    let v = document.getElementById('v'), b64 = "";
-    
-    // Sketchware Fix: Manual start trigger
+    // 2. Camera Setup
+    let v = document.getElementById('v'), b64 = "", streamRef = null;
+
     async function startCam() {
+        if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); }
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
-            v.srcObject = stream;
-            v.onloadedmetadata = () => {
-                v.play();
-                document.getElementById('camMsg').style.display = "none";
-            };
+            streamRef = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 480 } });
+            v.srcObject = streamRef;
+            v.play();
+            document.getElementById('status').innerText = "Camera Ready ✅";
+            document.getElementById('status').style.color = "black";
         } catch (e) {
-            alert("Camera Access Denied! Please check app permissions.");
+            document.getElementById('status').innerText = "Camera Error! Check Permissions";
         }
     }
 
-    // Try starting automatically
+    // Load Memory
     window.onload = () => {
         startCam();
-        const sc = localStorage.getItem('lc');
-        if(sc) { document.getElementById('classList').value = sc; loadStudents(); }
+        const saved = localStorage.getItem('lastClass');
+        if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
     };
+
+    function saveClassAndLoad() {
+        let cid = document.getElementById('classList').value;
+        localStorage.setItem('lastClass', cid);
+        loadStudents();
+    }
 
     function loadStudents() {
         let cid = document.getElementById('classList').value;
-        if(!cid) return;
-        localStorage.setItem('lc', cid);
         let sl = document.getElementById('sList');
+        if(!cid) return;
         sl.innerHTML = "<option>Loading...</option>";
-        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(d => {
+        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(data => {
             sl.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
-            d.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
+            data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
         });
     }
 
     function snap() {
-        if(!v.srcObject) return alert("Pehle camera start hone dein!");
+        if(!v.srcObject) { startCam(); return; }
         const cn = document.getElementById('c');
-        cn.width = 300; cn.height = 225;
-        cn.getContext('2d').drawImage(v, 0, 0, 300, 225);
-        b64 = cn.toDataURL('image/jpeg', 0.4); 
+        cn.width = 320; cn.height = 240;
+        cn.getContext('2d').drawImage(v, 0, 0, 320, 240);
+        b64 = cn.toDataURL('image/jpeg', 0.5); 
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; v.style.display = "none";
-        document.getElementById('snBtn').innerText = "🔄 RETAKE";
+        document.getElementById('snBtn').innerText = "🔄 RETAKE PHOTO";
     }
 
     function send(t) {
         const cid = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
-        if(!name) return alert("Student select karein!");
-        if(t === 'check-in' && !b64) return alert("Photo lein!");
+        if(!name) return alert("Select Student!");
+        if(t === 'check-in' && !b64) return alert("Take Photo!");
 
         document.getElementById('ctrls').style.display = "none";
         document.getElementById('status').innerText = "🚀 Sending...";
+        document.getElementById('status').style.color = "black";
 
         navigator.geolocation.getCurrentPosition(pos => {
             fetch(SCRIPT_URL, {
@@ -121,19 +136,26 @@
                 body: JSON.stringify({classId: cid, name: name, type: t, location: pos.coords.latitude+","+pos.coords.longitude, photo: b64})
             });
             
+            // Success Message Setup
             setTimeout(() => {
-                alert("Attendance Recorded!");
-                resetUI();
-            }, 1000);
-        }, () => { alert("GPS ON karein!"); resetUI(); });
+                const statusDiv = document.getElementById('status');
+                statusDiv.innerHTML = `<span class="success-msg">✅ Done. ${name}</span>`;
+                resetUI(false); 
+            }, 800);
+        }, () => { alert("GPS ON karein!"); resetUI(true); });
     }
 
-    function resetUI() {
-        b64 = ""; document.getElementById('p').style.display = "none"; v.style.display = "block";
+    function resetUI(clearMsg) {
+        b64 = ""; 
+        document.getElementById('p').style.display = "none"; 
+        v.style.display = "block";
         document.getElementById('ctrls').style.display = "block";
-        document.getElementById('status').innerText = "Ready";
         document.getElementById('snBtn').innerText = "📸 TAKE PHOTO";
         document.getElementById('sList').value = "";
+        if(clearMsg) {
+            document.getElementById('status').innerText = "Ready";
+            document.getElementById('status').style.color = "black";
+        }
     }
 </script>
 </body>
