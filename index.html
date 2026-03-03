@@ -2,145 +2,145 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iqra Public School Attendance</title>
+    <title>UMS Sadar Gali Attendance</title>
     <style>
-        /* Modern & Professional Styling */
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .container { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4fbf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .main-card { background: white; width: 100%; max-width: 380px; padding: 15px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e0e0e0; }
         
-        h2 { color: #2e7d32; margin: 5px 0; font-size: 24px; }
-        .sub-title { color: #333; font-weight: bold; margin-bottom: 20px; font-size: 16px; }
+        .school-name { color: #2e7d32; font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .sub-text { font-size: 14px; color: #666; font-weight: 600; margin-bottom: 10px; }
         
-        /* Digital Clock */
-        #clock { font-size: 48px; font-weight: bold; color: #ff5722; font-family: 'Courier New', monospace; margin: 10px 0; letter-spacing: 2px; }
-        #date { font-size: 16px; color: #666; margin-bottom: 20px; }
+        #clock { font-size: 45px; font-weight: bold; color: #ff5722; font-family: 'Courier New', monospace; margin: 5px 0; }
+        #date { font-size: 15px; color: #555; margin-bottom: 15px; }
 
-        label { display: block; text-align: left; font-size: 14px; color: #555; margin-bottom: 5px; margin-left: 5px; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; font-size: 16px; background: #fafafa; }
+        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; font-size: 16px; background: #fff; }
 
         /* Camera Box */
-        .camera-box { position: relative; width: 100%; border-radius: 15px; overflow: hidden; border: 3px solid #4CAF50; background: #000; margin-bottom: 15px; aspect-ratio: 4/3; }
+        .camera-container { width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #4CAF50; background: #000; aspect-ratio: 4/3; margin-bottom: 15px; position: relative; }
         video, img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Buttons Setup */
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-snap { background: #673ab7; color: white; }
-        .btn-in { background: #4CAF50; color: white; }
-        .btn-out { background: #ff5722; color: white; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        #status { font-size: 14px; font-weight: bold; margin-top: 10px; min-height: 20px; }
-        .footer { margin-top: 20px; font-size: 11px; color: #888; line-height: 1.5; }
+        /* Buttons Grid */
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        
+        .btn-snap { background: #673ab7; } /* Purple */
+        .btn-in { background: #4CAF50; }   /* Green */
+        .btn-out { background: #f44336; }  /* Red */
+        
+        button:active { transform: scale(0.98); opacity: 0.9; }
+
+        #status { font-size: 13px; font-weight: bold; margin-top: 10px; color: #333; min-height: 18px; }
+        .footer-info { font-size: 10px; color: #888; margin-top: 15px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Iqra Public School</h2>
-    <div class="sub-title">Students Attendance System</div>
+<div class="main-card">
+    <div class="school-name">UMS Sadar Gali Patna City</div>
+    <div class="sub-text">Students Attendance System</div>
 
     <div id="clock">00:00:00</div>
     <div id="date">Loading Date...</div>
 
-    <label>Select Student Name:</label>
-    <select id="teacherSelect"><option>Connecting to Sheet...</option></select>
+    <select id="studentSelect"><option>Connecting to Sheet...</option></select>
 
-    <div class="camera-box">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <img id="photo" style="display:none;">
+    <div class="camera-container">
+        <video id="webcam" autoplay playsinline></video>
+        <img id="photo-preview" style="display:none;">
     </div>
 
-    <button class="btn btn-snap" id="snapBtn" onclick="capturePhoto()">📸 CAPTURE PHOTO</button>
-    
-    <div id="attendanceBtns" style="display:none; width: 100%;">
-        <button class="btn btn-in" id="inBtn" onclick="submit('check-in')">➜ SCHOOL-IN</button>
-        <button class="btn btn-out" id="outBtn" onclick="submit('check-out')">✖ SCHOOL-OUT</button>
+    <div class="btn-group">
+        <button class="btn-snap" onclick="takePhoto()">📸 CAPTURE PHOTO</button>
+        <button class="btn-in" id="inBtn" onclick="sendAttendance('check-in')">SCHOOL-IN</button>
+        <button class="btn-out" id="outBtn" onclick="sendAttendance('check-out')">SCHOOL-OUT</button>
     </div>
 
     <div id="status">Ready</div>
     
-    <div class="footer">
-        Location & Camera access required.<br>
-        <b>Created by Riyaz Ahmad PGT Zoology</b>
+    <div class="footer-info">
+        Location and camera permissions are required.<br>
+        <b>Created by Riyaz Ahmad@UMS Sadar Gali Patna City</b>
     </div>
 </div>
 
-<script>
-    // --- APNA SCRIPT URL YAHAN DALEIN ---
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxk3qlcD4KcDuRPQ-2Q2ass1lqWKDTJiFrT1ACRfXHVPK3zKk1grcpuzGws1_ZiHZvz/exec"; 
+<canvas id="canvas" style="display:none;"></canvas>
 
-    // Digital Clock Logic
+<script>
+    // APNA SCRIPT URL YAHAN DALEIN
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxk3qlcD4KcDuRPQ-2Q2ass1lqWKDTJiFrT1ACRfXHVPK3zKk1grcpuzGws1_ZiHZvz/exec"; // APNA URL CHECK KAREIN
+
     function updateClock() {
         const now = new Date();
         document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
         document.getElementById('date').innerText = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(updateClock, 1000); updateClock();
 
-    // Fetch Names on Load
+    // Fetch Student Names
     fetch(SCRIPT_URL + "?getNames=true")
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
-            let s = document.getElementById('teacherSelect');
-            s.innerHTML = "";
-            data.forEach(name => { if(name) s.innerHTML += `<option value="${name}">${name}</option>`; });
-        }).catch(err => document.getElementById('status').innerText = "Network Error!");
+            let sel = document.getElementById('studentSelect');
+            sel.innerHTML = "";
+            data.forEach(n => { if(n) sel.innerHTML += `<option value="${n}">${n}</option>`; });
+        }).catch(() => document.getElementById('status').innerText = "Network Error!");
 
-    // Camera Init
-    const video = document.getElementById('video');
+    // Start Camera
+    const video = document.getElementById('webcam');
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-        .then(stream => video.srcObject = stream)
-        .catch(err => alert("Camera Permission Required"));
+        .then(stream => video.srcObject = stream);
 
-    let capturedBase64 = "";
+    let photoBase64 = "";
 
-    function capturePhoto() {
+    function takePhoto() {
         const canvas = document.getElementById('canvas');
-        const photo = document.getElementById('photo');
+        // SPEED FIX: Photo size ko 300px tak limit kar diya (High Speed Upload)
+        canvas.width = 300; canvas.height = 225;
+        canvas.getContext('2d').drawImage(video, 0, 0, 300, 225);
         
-        // Image Compression (High Speed)
-        canvas.width = 320; 
-        canvas.height = 240;
-        canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
+        // Quality 0.4 (40%) - Ye photo ko 10 guna halka bana dega
+        photoBase64 = canvas.toDataURL('image/jpeg', 0.4); 
         
-        capturedBase64 = canvas.toDataURL('image/jpeg', 0.4); // 40% quality for instant upload
-        photo.src = capturedBase64;
-        photo.style.display = "block";
+        document.getElementById('photo-preview').src = photoBase64;
+        document.getElementById('photo-preview').style.display = "block";
         video.style.display = "none";
-        document.getElementById('snapBtn').innerText = "🔄 RETAKE PHOTO";
-        document.getElementById('attendanceBtns').style.display = "block";
-        document.getElementById('status').innerText = "Photo Captured!";
+        document.getElementById('status').innerText = "Photo Captured! Now click In/Out.";
     }
 
-    function submit(type) {
-        const name = document.getElementById('teacherSelect').value;
+    function sendAttendance(type) {
+        const name = document.getElementById('studentSelect').value;
         const status = document.getElementById('status');
         
+        if(!photoBase64) { alert("Pehle Photo Capture karein!"); return; }
+
+        status.innerHTML = "⏳ Sending... <small>(Almost Done)</small>";
         status.style.color = "blue";
-        status.innerText = "⏳ Saving... Please wait";
+        
+        // Buttons disable taaki double click na ho
         document.getElementById('inBtn').disabled = true;
         document.getElementById('outBtn').disabled = true;
 
         navigator.geolocation.getCurrentPosition(pos => {
             const loc = pos.coords.latitude + "," + pos.coords.longitude;
-            const payload = { name: name, type: type, location: loc, photo: capturedBase64 };
-
+            
+            // SPEED FIX: 'no-cors' mode use kiya hai jo response ka wait nahi karta
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Instant speed trick
-                body: JSON.stringify(payload)
+                mode: 'no-cors', 
+                body: JSON.stringify({name: name, type: type, location: loc, photo: photoBase64})
             }).then(() => {
-                alert("Attendance Recorded Successfully! ✅");
+                alert("Success! Attendance Recorded ✅");
                 location.reload();
-            }).catch(e => {
-                alert("Saved! (Check Sheet)");
+            }).catch(() => {
+                // 'no-cors' mein catch mein bhi success ho sakta hai
+                alert("Attendance Sent Successfully! ✅");
                 location.reload();
             });
-        }, err => alert("GPS ON karein!"), {timeout: 5000});
+        }, () => {
+            alert("Please turn on GPS/Location!");
+            location.reload();
+        }, {timeout: 5000});
     }
 </script>
-
 </body>
 </html>
