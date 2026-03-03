@@ -2,51 +2,48 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IQRA PUBLIC SCHOOL Attendance</title>
+    <title>IQRA Fast Attendance</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; width: 100%; max-width: 360px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #2e7d32; }
-        h2 { color: #2e7d32; margin: 5px 0; font-size: 20px; text-transform: uppercase; }
-        .sub { color: #444; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
-        #clock { font-size: 38px; font-weight: bold; color: #ff5722; font-family: monospace; margin: 5px 0; }
-        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; font-weight: bold; border: 1px solid #2e7d32; background: #fff; }
-        .cam-box { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #ccc; aspect-ratio: 4/3; margin-bottom: 10px; background: #000; }
+        h2 { color: #2e7d32; margin: 5px 0; font-size: 20px; }
+        #clock { font-size: 36px; font-weight: bold; color: #ff5722; margin: 5px 0; }
+        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; font-weight: bold; border: 1px solid #2e7d32; }
+        .cam-box { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #ccc; aspect-ratio: 4/3; margin-bottom: 10px; background: #000; position: relative; }
         video, img { width: 100%; height: 100%; object-fit: cover; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; margin-bottom: 8px; cursor: pointer; transition: 0.3s; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; margin-bottom: 8px; cursor: pointer; }
         .b-snap { background: #673ab7; } .b-in { background: #4CAF50; } .b-out { background: #f44336; }
-        button:active { transform: scale(0.98); opacity: 0.9; }
-        #loader { display: none; color: #2e7d32; font-weight: bold; margin-bottom: 10px; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-        #status { font-weight: bold; color: #333; margin: 10px 0; min-height: 20px; font-size: 14px; }
-        .footer { font-size: 11px; color: #777; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.5; }
+        #status { font-weight: bold; color: #333; margin: 10px 0; }
+        .footer { font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>IQRA PUBLIC SCHOOL</h2>
-    <div class="sub">Students Attendance System</div>
     <div id="clock">00:00:00</div>
     
-    <select id="classList" onchange="saveClassAndLoad()">
+    <select id="classList" onchange="loadStudents()">
         <option value="">-- SELECT CLASS --</option>
+        <option value="1">Class 1</option><option value="2">Class 2</option>
+        <option value="3">Class 3</option><option value="4">Class 4</option>
+        <option value="5">Class 5</option><option value="6">Class 6</option>
+        <option value="7">Class 7</option><option value="8">Class 8</option>
+        <option value="9">Class 9</option><option value="10">Class 10</option>
     </select>
 
-    <select id="sList"><option value="">-- FIRST SELECT CLASS --</option></select>
+    <select id="sList"><option value="">-- SELECT STUDENT --</option></select>
 
     <div class="cam-box">
-        <video id="v" autoplay playsinline></video>
+        <video id="v" autoplay playsinline muted></video>
         <img id="p" style="display:none;">
     </div>
-    
-    <div id="loader">🚀 SENDING DATA... PLEASE WAIT</div>
     
     <div id="ctrls">
         <button class="b-snap" id="snBtn" onclick="snap()">📸 TAKE PHOTO</button>
         <button class="b-in" onclick="send('check-in')">SCHOOL-IN</button>
         <button class="b-out" onclick="send('check-out')">SCHOOL-OUT</button>
     </div>
-
     <div id="status">Ready</div>
 
     <div class="footer">
@@ -60,107 +57,74 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; 
 
-    // Time Update
-    setInterval(() => { 
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); 
-    }, 1000);
+    // 1. Clock
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
 
-    // 1. Load Classes & Restore Previous Selection from Memory
-    fetch(SCRIPT_URL + "?getClasses=true").then(r => r.json()).then(classes => {
-        let cl = document.getElementById('classList');
-        classes.sort((a,b)=>a-b).forEach(c => {
-            cl.innerHTML += `<option value="${c}">Class ${c}</option>`;
-        });
-        
-        // Restore saved class if exists
-        const savedClass = localStorage.getItem('selectedClass');
-        if(savedClass) {
-            cl.value = savedClass;
-            loadStudents(savedClass);
-        }
-    });
-
-    function saveClassAndLoad() {
-        let classId = document.getElementById('classList').value;
-        localStorage.setItem('selectedClass', classId); 
-        loadStudents(classId);
-    }
-
-    function loadStudents(classId) {
-        let sList = document.getElementById('sList');
-        if(!classId) {
-            sList.innerHTML = "<option value=''>-- SELECT CLASS FIRST --</option>";
-            return;
-        }
-        sList.innerHTML = "<option>Loading Students...</option>";
-        fetch(SCRIPT_URL + "?classId=" + classId).then(r => r.json()).then(students => {
-            sList.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
-            students.forEach(s => {
-                sList.innerHTML += `<option value="${s}">${s}</option>`;
-            });
-        });
-    }
-
-    // Camera Logic
+    // 2. Camera Fix (Force Start)
     let v = document.getElementById('v'), b64 = "";
-    navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}})
-        .then(s => v.srcObject=s)
-        .catch(err => alert("Camera error: " + err));
+    function startCam() {
+        navigator.mediaDevices.getUserMedia({video:{facingMode:"user", width: 400}}).then(s => {
+            v.srcObject = s;
+            v.play();
+        }).catch(e => { document.getElementById('status').innerText = "Camera Error! Please refresh."; });
+    }
+    startCam();
+
+    // 3. Class Memory & Load
+    window.onload = () => {
+        const savedClass = localStorage.getItem('lastClass');
+        if(savedClass) {
+            document.getElementById('classList').value = savedClass;
+            loadStudents();
+        }
+    };
+
+    function loadStudents() {
+        let classId = document.getElementById('classList').value;
+        if(!classId) return;
+        localStorage.setItem('lastClass', classId);
+        let sList = document.getElementById('sList');
+        sList.innerHTML = "<option>Loading...</option>";
+        fetch(SCRIPT_URL + "?classId=" + classId).then(r => r.json()).then(data => {
+            sList.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
+            data.forEach(n => sList.innerHTML += `<option value="${n}">${n}</option>`);
+        });
+    }
 
     function snap() {
         const cn = document.getElementById('c');
-        cn.width = 250; cn.height = 180;
-        cn.getContext('2d').drawImage(v, 0, 0, 250, 180);
-        b64 = cn.toDataURL('image/jpeg', 0.2); 
+        cn.width = 300; cn.height = 225;
+        cn.getContext('2d').drawImage(v, 0, 0, 300, 225);
+        b64 = cn.toDataURL('image/jpeg', 0.3); 
         document.getElementById('p').src = b64; 
-        document.getElementById('p').style.display = "block"; 
-        v.style.display = "none";
-        document.getElementById('snBtn').innerText = "🔄 RETAKE PHOTO";
+        document.getElementById('p').style.display = "block"; v.style.display = "none";
+        document.getElementById('snBtn').innerText = "🔄 RETAKE";
     }
 
     function send(t) {
-        const classId = document.getElementById('classList').value;
+        const cId = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
-        
-        if(!classId || !name) return alert("Pehle Student select karein!");
-        if(t === 'check-in' && !b64) return alert("Pehle photo capture karein!");
+        if(!name) return alert("Student select karein!");
+        if(t === 'check-in' && !b64) return alert("Photo lein!");
 
         document.getElementById('ctrls').style.display = "none";
-        document.getElementById('loader').style.display = "block";
-        document.getElementById('status').innerText = "Processing...";
+        document.getElementById('status').innerText = "🚀 Sending...";
 
         navigator.geolocation.getCurrentPosition(pos => {
+            // Speed Trick: Send and Alert immediately (No-Cors)
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({
-                    classId: classId, 
-                    name: name, 
-                    type: t, 
-                    location: pos.coords.latitude+","+pos.coords.longitude, 
-                    photo: b64
-                })
+                body: JSON.stringify({classId: cId, name: name, type: t, location: pos.coords.latitude+","+pos.coords.longitude, photo: b64})
             });
             
-            setTimeout(() => {
-                alert("Attendance Recorded for " + name);
-                resetAfterSuccess(); 
-            }, 1200);
-        }, () => { 
-            alert("GPS On karein!"); 
-            resetAfterSuccess();
-        }, {timeout: 5000});
-    }
-
-    function resetAfterSuccess() {
-        // Only reset Student and Photo, NOT the Class
-        b64 = ""; 
-        document.getElementById('p').style.display = "none"; 
-        v.style.display = "block";
-        document.getElementById('snBtn').innerText = "📸 TAKE PHOTO";
-        document.getElementById('ctrls').style.display = "block";
-        document.getElementById('loader').style.display = "none";
-        document.getElementById('status').innerText = "Ready";
-        document.getElementById('sList').value = ""; // Reset student list to default
+            alert("Attendance Sent!");
+            // Quick Reset (No Reload)
+            b64 = ""; document.getElementById('p').style.display = "none"; v.style.display = "block";
+            document.getElementById('ctrls').style.display = "block";
+            document.getElementById('status').innerText = "Ready";
+            document.getElementById('snBtn').innerText = "📸 TAKE PHOTO";
+            document.getElementById('sList').value = "";
+        }, () => { alert("GPS ON karein!"); location.reload(); });
     }
 </script>
 </body>
