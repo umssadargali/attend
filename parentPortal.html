@@ -71,7 +71,7 @@
 
 <script>
     // === APNA GOOGLE SCRIPT URL YAHAN DALEIN ===
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlh_xrG3O3Bi7WjpQqWR300Kz_CY8WJ2LE9sT6jDvtvFrvpYWd8o0GQNNWvslqExv-/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSwNtrswm108q0qUIV5S3f2liiUhD6437w7gPgBtSV8Mmi5TbURzJPAjagO6Q26PKU/exec"; 
 
     // 1. Students Load Karne Ka Function
     function loadStudents() {
@@ -111,17 +111,23 @@
                 html = "<p style='color:#666; font-weight:600; margin-top:20px;'>No record found for today.</p>";
             } else {
                 data.forEach(row => {
-                    // --- PHOTO URL FIXER ---
-                    // Index 6 is Column G (Photo URL)
-                    let driveUrl = row[6] || row.photo || "";
+                    // --- PHOTO URL FIXER (UPDATED) ---
+                    let driveUrl = row[6] || "";
                     let finalImg = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // Default Icon
                     
-                    if(driveUrl.includes("id=")) {
-                        let id = driveUrl.split("id=")[1].split("&")[0];
-                        finalImg = "https://lh3.googleusercontent.com/d/" + id;
-                    } else if(driveUrl.includes("/d/")) {
-                        let id = driveUrl.split("/d/")[1].split("/")[0];
-                        finalImg = "https://lh3.googleusercontent.com/d/" + id;
+                    if(driveUrl && driveUrl !== "No Photo") {
+                        let fileId = "";
+                        // Drive ID nikalne ka logic
+                        if(driveUrl.includes("id=")) {
+                            fileId = driveUrl.split("id=")[1].split("&")[0];
+                        } else if(driveUrl.includes("/d/")) {
+                            fileId = driveUrl.split("/d/")[1].split("/")[0];
+                        }
+                        
+                        if(fileId) {
+                            // Direct Google Image link (lh3/https format)
+                            finalImg = "https://lh3.googleusercontent.com/d/" + fileId;
+                        }
                     }
 
                     // --- TIME MAPPING ---
