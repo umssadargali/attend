@@ -14,12 +14,13 @@
         .btn-check { background: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; }
         #resultsArea { width: 100%; max-width: 400px; }
         .attendance-card { background: white; margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); }
-        .student-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; margin-right: 15px; background: #eee; }
+        .student-photo { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 1px solid #ddd; margin-right: 15px; background: #eee; }
         .details { flex: 1; text-align: left; }
-        .details b { color: #333; font-size: 16px; display: block; margin-bottom: 5px; }
-        .label-in { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .label-out { background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .time-text { font-size: 14px; color: #555; margin: 4px 0 8px 0; }
+        .details b { color: #333; font-size: 16px; display: block; margin-bottom: 8px; text-transform: uppercase; }
+        .label-box { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .label-in { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; width: fit-content; margin-bottom: 2px; }
+        .label-out { background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; width: fit-content; margin-bottom: 2px; }
+        .time-val { font-size: 14px; color: #444; font-weight: 500; margin-left: 5px; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -66,7 +67,7 @@
     function search() {
         let classId = document.getElementById('classList').value;
         let name = document.getElementById('sList').value;
-        if(!classId || !name) return alert("Pehle Class aur Student chunein!");
+        if(!classId || !name) return alert("Select Class and Student!");
 
         document.getElementById('resultsArea').innerHTML = "";
         document.getElementById('loader').style.display = "block";
@@ -78,24 +79,33 @@
             let html = "";
             
             if(!data || data.length === 0) {
-                html = "<p style='text-align:center; color:#666;'>Aaj ka koi record nahi mila.</p>";
+                html = "<p style='text-align:center; color:#666;'>Aaj ka record nahi mila.</p>";
             } else {
                 data.forEach(row => {
-                    // Check for undefined and fix keys
-                    let sName = row.name || row.Name || name;
-                    let sEntry = row.entry || row.Entry || row.in || "---";
-                    let sExit = row.exit || row.Exit || row.out || "Inside School";
-                    let pic = row.photo || row.Photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                    // YAHAN MAPPING THEEK KI GAYI HAI:
+                    // Sheet Column A = Students Name
+                    // Sheet Column B = Entry Time
+                    // Sheet Column C = Leaving Time
+                    // Sheet Column G = Photo URL
+                    
+                    let sName = row["Students Name"] || row.name || name;
+                    let sEntry = row["Entry Time"] || row.entry || "---";
+                    let sExit = row["Leaving Time"] || row.exit || "Inside School";
+                    let pic = row["Photo URL"] || row.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                     
                     html += `
                     <div class="attendance-card">
                         <img src="${pic}" class="student-photo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <div class="details">
                             <b>${sName}</b>
-                            <div class="label-in">Entry Time</div>
-                            <div class="time-text">${sEntry}</div>
-                            <div class="label-out">Exit Time</div>
-                            <div class="time-text">${sExit}</div>
+                            <div class="label-box">
+                                <span class="label-in">ENTRY TIME</span>
+                                <span class="time-val">${sEntry}</span>
+                            </div>
+                            <div class="label-box">
+                                <span class="label-out">EXIT TIME</span>
+                                <span class="time-val">${sExit}</span>
+                            </div>
                         </div>
                     </div>`;
                 });
@@ -104,7 +114,7 @@
         })
         .catch(err => {
             document.getElementById('loader').style.display = "none";
-            alert("Error: Data load nahi ho paya.");
+            alert("Error loading data.");
         });
     }
 </script>
