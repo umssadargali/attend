@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+/* Aapka Purana Styling */
+body { font-family: 'Roboto', sans-serif; background: #e8f5e9; padding-top: 30px; text-align: center; }
+.card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+.result-card { background: white; margin-top: 15px; padding: 15px; border-radius: 12px; text-align: left; border-left: 5px solid #4CAF50; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.student-img { width: 70px; height: 70px; border-radius: 5px; margin-left: 10px; }
+</style>
+</head>
+<body>
+<div class="card">
+    <h2>Iqra Public School</h2>
+    <p>Parent Tracking Portal</p>
+    <select id="studentSelect"><option>Loading...</option></select>
+    <button onclick="search()" style="width:100%; padding:10px; background:#4CAF50; color:white; border:none; border-radius:8px;">Check Attendance</button>
+</div>
+<div id="resultsArea" style="max-width:400px; margin:auto; margin-top:20px;"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsFahB1EHS9syrOngV2nuDAPJ-d3P8dluTptapVwyWdNWZBevcyYbP7hBDBvAHgdON/exec"; // <--- APNA URL YAHAN DALEIN
+
+fetch(SCRIPT_URL + "?getNames=true").then(r => r.json()).then(list => {
+    let s = document.getElementById('studentSelect');
+    s.innerHTML = '<option value="">Select Student</option>';
+    list.forEach(n => { let o = document.createElement('option'); o.value = n; o.text = n; s.add(o); });
+});
+
+function search() {
+    let name = document.getElementById('studentSelect').value;
+    document.getElementById('resultsArea').innerHTML = "Searching...";
+    
+    fetch(SCRIPT_URL + "?getAttendance=true&name=" + encodeURIComponent(name))
+    .then(r => r.json())
+    .then(data => {
+        let html = "";
+        data.forEach(row => {
+            html += `<div class="result-card">
+                <div style="flex:1"><b>In:</b> ${row.entry}<br><b>Out:</b> ${row.exit}</div>
+                <img src="${row.photo}" class="student-img">
+            </div>`;
+        });
+        document.getElementById('resultsArea').innerHTML = html || "No records found.";
+    });
+}
+</script>
+</body>
+</html>
