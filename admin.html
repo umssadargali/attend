@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Iqra Public School</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 15px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #2e7d32; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .stat-box { text-align: center; background: #e8f5e9; padding: 10px; border-radius: 10px; flex: 1; margin: 0 5px; }
+        .stat-box span { display: block; font-size: 22px; font-weight: bold; color: #2e7d32; }
+        .stat-box label { font-size: 12px; color: #666; text-transform: uppercase; }
+
+        #search { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f4f4f4; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .img-preview { width: 45px; height: 45px; border-radius: 5px; object-fit: cover; cursor: pointer; border: 1px solid #ddd; }
+        .status-in { color: #2e7d32; font-weight: bold; }
+        .status-out { color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Admin Dashboard</h2>
+    
+    <div class="stats">
+        <div class="stat-box"><span id="total">0</span><label>Total</label></div>
+        <div class="stat-box"><span id="present" style="color:#ff9800;">0</span><label>Still In</label></div>
+        <div class="stat-box"><span id="away" style="color:#f44336;">0</span><label>Went Out</label></div>
+    </div>
+
+    <input type="text" id="search" placeholder="Search student name..." onkeyup="filterTable()">
+
+    <table id="adminTable">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>In/Out Time</th>
+                <th>Photo</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr><td colspan="3" style="text-align:center;">Loading today's data...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7_gDby9hIutrnZ3p8iiTYqLvNZVvbX77N_-G78yANy3DzQ45SHlqcLtSrI1mjNbM/exec";
+
+    async function loadData() {
+        try {
+            const response = await fetch(SCRIPT_URL + "?admin=true");
+            const data = await response.json();
+            
+            document.getElementById('total').innerText = data.total;
+            document.getElementById('present').innerText = data.in;
+            document.getElementById('away').innerText = data.out;
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+
+            if(data.list.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No attendance today.</td></tr>";
+                return;
+            }
+
+            data.list.reverse().forEach(item => {
+                let outDisp = item.out === "Inside" ? "<span class='status-in'>School mein hai</span>" : item.out;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${item.name}</b></td>
+                        <td>In: ${item.in}<br>Out: ${outDisp}</td>
+                        <td>
+                            ${item.pic !== "No Photo" && item.pic !== "Error" ? 
+                            `<img src="${item.pic}" class="img-preview" onclick="window.open('${item.pic}')">` : 
+                            `<small>No Photo</small>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            document.getElementById('tableBody').innerHTML = "<tr><td colspan='3' style='color:red;'>Error loading data!</td></tr>";
+        }
+    }
+
+    function filterTable() {
+        let input = document.getElementById("search").value.toUpperCase();
+        let rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let name = rows[i].getElementsByTagName("td")[0];
+            if (name) {
+                let text = name.textContent || name.innerText;
+                rows[i].style.display = text.toUpperCase().indexOf(input) > -1 ? "" : "none";
+            }
+        }
+    }
+
+    loadData();
+</script>
+</body>
+</html>
