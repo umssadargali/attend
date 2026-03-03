@@ -3,23 +3,26 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Portal - Iqra Public School</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2e7d32; --secondary: #4caf50; --bg: #f1f8e9; }
+        :root { --primary: #2e7d32; --bg: #f1f8e9; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .main-card { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; margin-bottom: 20px; box-sizing: border-box; border-top: 5px solid var(--primary); }
-        h2 { color: var(--primary); margin: 0 0 5px 0; font-size: 22px; }
+        .main-card { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; margin-bottom: 20px; border-top: 5px solid var(--primary); box-sizing: border-box; }
+        h2 { color: var(--primary); margin: 0; font-size: 22px; }
         p { color: #666; margin: 0 0 20px 0; font-size: 13px; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; font-size: 15px; outline: none; margin-bottom: 12px; background: #fafafa; font-weight: bold; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; font-size: 15px; margin-bottom: 12px; background: #fafafa; font-weight: bold; }
         .btn-check { background: var(--primary); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; }
-        #resultsArea { width: 100%; max-width: 400px; }
-        .attendance-card { background: white; margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); }
-        .student-photo { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; border: 2px solid #eee; margin-right: 15px; background: #f9f9f9; }
-        .details { flex: 1; text-align: left; }
-        .details b { color: #333; font-size: 15px; display: block; margin-bottom: 8px; }
-        .label-in { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; width: fit-content; }
-        .label-out { background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; width: fit-content; }
-        .time-text { font-size: 13px; color: #555; margin: 3px 0 10px 5px; font-family: monospace; }
+        #resultsArea { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
+        
+        .attendance-card { background: white; margin-bottom: 12px; padding: 15px; border-radius: 16px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--primary); width: 100%; box-sizing: border-box; }
+        .student-photo { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; border: 2px solid #eee; margin-left: 15px; background: #f9f9f9; order: 2; }
+        .details { flex: 1; text-align: left; order: 1; }
+        .details b { color: #333; font-size: 14px; display: block; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        
+        .info-row { font-size: 12px; color: #444; margin-bottom: 8px; }
+        .label { font-weight: 600; color: #2e7d32; display: block; font-size: 11px; text-transform: uppercase; }
+        .time-val { font-family: monospace; font-size: 13px; color: #333; }
+        
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -54,7 +57,7 @@
         let classId = document.getElementById('classList').value;
         let sList = document.getElementById('sList');
         if(!classId) return;
-        sList.innerHTML = "<option>Loading...</option>";
+        sList.innerHTML = "<option>Loading Names...</option>";
         fetch(SCRIPT_URL + "?classId=" + classId)
         .then(res => res.json())
         .then(data => {
@@ -78,32 +81,39 @@
             let html = "";
             
             if(!data || data.length === 0) {
-                html = "<p style='text-align:center; color:#666;'>No record found.</p>";
+                html = "<p style='color:#666;'>No record found for today.</p>";
             } else {
                 data.forEach(row => {
                     // --- DRIVE PHOTO URL FIX ---
-                    let rawUrl = row["Photo URL"] || row.photo || "";
+                    let rawUrl = row["Photo URL"] || row[6] || ""; 
                     let imgUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                     
-                    if(rawUrl.includes("drive.google.com")) {
-                        let fileId = rawUrl.match(/[-\w]{25,}/);
-                        if(fileId) imgUrl = "https://lh3.googleusercontent.com/d/" + fileId[0];
+                    if(rawUrl.includes("id=")) {
+                        let id = rawUrl.split("id=")[1].split("&")[0];
+                        imgUrl = "https://lh3.googleusercontent.com/d/" + id;
+                    } else if(rawUrl.includes("/d/")) {
+                        let id = rawUrl.split("/d/")[1].split("/")[0];
+                        imgUrl = "https://lh3.googleusercontent.com/d/" + id;
                     }
 
-                    // --- NAME & TIME FIX ---
-                    let sName = row["Students Name"] || row.name || name;
-                    let sEntry = row["Entry Time"] || row.entry || "---";
-                    let sExit = row["Leaving Time"] || row.exit || "Inside School";
+                    // --- DATA MAPPING ---
+                    let sName = name; // Dropdown se liya gaya naam
+                    let sEntry = row["Entry Time"] || row[1] || "---";
+                    let sExit = row["Leaving Time"] || row[2] || "Inside School";
 
                     html += `
                     <div class="attendance-card">
                         <img src="${imgUrl}" class="student-photo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <div class="details">
                             <b>${sName}</b>
-                            <div class="label-in">ENTRY TIME</div>
-                            <div class="time-text">${sEntry}</div>
-                            <div class="label-out">EXIT TIME</div>
-                            <div class="time-text">${sExit}</div>
+                            <div class="info-row">
+                                <span class="label">Check-In:</span>
+                                <span class="time-val">${sEntry}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Check-Out:</span>
+                                <span class="time-val">${sExit}</span>
+                            </div>
                         </div>
                     </div>`;
                 });
@@ -112,7 +122,7 @@
         })
         .catch(err => {
             document.getElementById('loader').style.display = "none";
-            alert("Error loading data.");
+            alert("Connection Error!");
         });
     }
 </script>
