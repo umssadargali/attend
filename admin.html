@@ -8,7 +8,6 @@
         .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h2 { color: #2e7d32; text-align: center; margin-bottom: 10px; }
         
-        /* Fast Loading Styles */
         select, input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; font-weight: bold; }
         
         .stats { display: flex; justify-content: space-around; margin-bottom: 15px; gap: 8px; }
@@ -21,7 +20,6 @@
         th { background: #2e7d32; color: white; padding: 10px; text-align: left; position: sticky; top: 0; }
         td { padding: 8px; border-bottom: 1px solid #eee; }
         
-        /* Low-Res Optimized Photo Styles */
         .img-preview { 
             width: 45px; 
             height: 45px; 
@@ -42,21 +40,23 @@
     
     <select id="classPicker" onchange="loadAdminData()">
         <option value="">-- SELECT CLASS TO VIEW --</option>
+        <option value="1">Class 1</option>
+        <option value="2">Class 2</option>
+        <option value="3">Class 3</option>
     </select>
 
     <div class="stats">
-        <div class="stat-box"><span id="total">0</span><label>Today</label></div>
-        <div class="stat-box"><span id="present" style="color:#2e7d32;">0</span><label>In</label></div>
-        <div class="stat-box"><span id="away" style="color:#f44336;">0</span><label>Out</label></div>
+        <div class="stat-box"><span id="total">0</span><label>Total Records</label></div>
+        <div class="stat-box"><span id="present" style="color:#2e7d32;">0</span><label>Status: IN</label></div>
     </div>
 
-    <input type="text" id="search" placeholder="🔍 Search student..." onkeyup="filterTable()">
+    <input type="text" id="search" placeholder="🔍 Search student name..." onkeyup="filterTable()">
 
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
-                    <th>Student</th>
+                    <th>Student Details</th>
                     <th>Status</th>
                     <th>Photo</th>
                 </tr>
@@ -69,56 +69,62 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwAyZNVWXJIGu4YsWMqQRBrY3VobKmnwYUbBuZhev4CaHVdtw3z3JwfZ-lxPhK-MFm/exec"; // <--- Apna Google Script URL yahan dalein
+    // === YAHAN APNA NEW DEPLOYMENT URL DALEIN ===
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyLj_ovwm8GjUY9SN8LVMmnlzIpHayigOEqmPpQJvggrJKYQP47qBdjeB7e7R3cd6L/exec"; 
 
-    // 1. Load Classes on startup
-    fetch(SCRIPT_URL + "?getClasses=true").then(r => r.json()).then(classes => {
-        let cp = document.getElementById('classPicker');
-        classes.sort((a,b)=>a-b).forEach(c => cp.innerHTML += `<option value="${c}">Class ${c}</option>`);
-    });
-
-    // 2. Load Admin Data for specific Class
     async function loadAdminData() {
         let classId = document.getElementById('classPicker').value;
         if(!classId) return;
 
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Loading Fast...</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Fetching from D" + classId + "...</td></tr>";
 
         try {
-            // Humne Backend mein pehle hi logic likha hai jo D1, D2 se data layega
-            const response = await fetch(SCRIPT_URL + "?admin=true&classId=" + classId);
+            // Admin ke liye hum poori sheet ka data mangwa rahe hain
+            const response = await fetch(SCRIPT_URL + "?getAttendance=true&classId=" + classId + "&name=all");
             const data = await response.json();
             
-            document.getElementById('total').innerText = data.total;
-            document.getElementById('present').innerText = data.in;
-            document.getElementById('away').innerText = data.out;
+            document.getElementById('total').innerText = data.length;
+            let inCount = data.filter(r => r[5] === 'IN').length;
+            document.getElementById('present').innerText = inCount;
 
             tbody.innerHTML = "";
-            if(data.list.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No data for today.</td></tr>";
+            if(data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No records found in D" + classId + "</td></tr>";
                 return;
             }
 
-            data.list.forEach(item => {
-                let statusMsg = item.out === "Inside" 
-                    ? `<span class="status-in">School Mein Hai</span>` 
-                    : `<span class="status-out">Out: ${item.out}</span>`;
+            data.forEach(row => {
+                // Photo Fixer Logic
+                let driveUrl = row[6] || "";
+                let finalImg = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                
+                if(driveUrl && driveUrl.includes("id=")) {
+                    let id = driveUrl.split("id=")[1].split("&")[0];
+                    finalImg = "https://drive.google.com/uc?export=view&id=" + id;
+                }
+
+                let statusClass = row[5] === 'IN' ? 'status-in' : 'status-out';
+                let outTime = row[2] ? row[2] : "Inside";
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><b>${item.name}</b><br><small>In: ${item.in}</small></td>
-                        <td>${statusMsg}</td>
                         <td>
-                            ${item.pic && item.pic !== "No Photo" ? 
-                            `<img src="${item.pic}" class="img-preview" loading="lazy" onclick="window.open('${item.pic}')">` : 
-                            `<small>No Pic</small>`}
+                            <b>${row[0]}</b><br>
+                            <small>In: ${row[1]}</small>
+                        </td>
+                        <td>
+                            <span class="${statusClass}">${row[5]}</span><br>
+                            <small>${outTime}</small>
+                        </td>
+                        <td>
+                            <img src="${finalImg}" class="img-preview" onclick="window.open('${driveUrl}')" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         </td>
                     </tr>
                 `;
             });
         } catch (e) {
-            tbody.innerHTML = "<tr><td colspan='3' style='color:red; text-align:center;'>Error loading data!</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='3' style='color:red; text-align:center;'>Connection Error!</td></tr>";
         }
     }
 
