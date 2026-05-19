@@ -23,7 +23,7 @@
         .card-title { font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600; }
         .card-value { font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 5px; }
         
-        .table-responsive { background: white; border-radius: 16px; padding: 15px; overflow-x: auto; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .table-responsive { background: white; border-radius: 16px; padding: 15px; overflow-x: auto; border: 1px solid #e2e8f0; box-shadow: 0 4px 12 rgba(0,0,0,0.02); }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
         th { background-color: #f1f5f9; color: #334155; padding: 14px 16px; font-weight: 600; font-size: 12px; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
         td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
@@ -40,7 +40,7 @@
 <div class="container">
     <div class="dashboard-header">
         <h1>भारत की जनगणना - 2027 Live Report</h1>
-        <p>Note :If any correction, contact to the office.</p>
+        <p>सुरक्षित लाइव विवरण (Circle No: Ascending Order | Columns A to G)</p>
     </div>
 
     <div class="analytics-grid" id="analyticsGrid" style="display: none;">
@@ -70,7 +70,7 @@
 </div>
 
 <script>
-    // [ZAROORI] Yahan apna Publish to Web wala CSV link paste karein
+    // [ZAROORI] Yahan apna Publish to Web wala CSV link dalein
     const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU50CYI-fSKJ8sK3kf23GaTSzRvigKqMbQQ_xA1SLjqyJlBOH1Ne1R91FZV4kcasppaMlK8m-SzJEK/pub?output=csv";
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -80,19 +80,21 @@
                 let lines = csvText.split("\n");
                 let rows = [];
                 
-                // Rows filter karna (Header hatakar aur khali rows ko nikal kar)
+                // Rows filter aur clean karna
                 for (let i = 1; i < lines.length; i++) {
                     if (lines[i].trim() === "") continue;
                     let parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     let mapped = parts.map(p => p.replace(/^"|"$/g, '').trim());
                     
-                    // Agar Circle No (Index 1) khali nahi hai to hi add karein
-                    if(mapped[1] && mapped[1] !== "") {
+                    // VALIDATION: Sirf wahi row lein jiska Circle No (Index 1) ek valid number ho
+                    // Isse "Remarks" ya "Circle No" jaise text automatic gayab ho jayenge
+                    let circleCheck = parseInt(mapped[1]);
+                    if(mapped[1] && mapped[1] !== "" && !isNaN(circleCheck)) {
                         rows.push(mapped);
                     }
                 }
 
-                // Circle No (Column B / Index 1) ke anusar Ascending Order me sorting
+                // Circle No (Index 1) ke hisab se Ascending Order sorting
                 rows.sort((a, b) => {
                     let numA = parseInt(a[1]) || 0;
                     let numB = parseInt(b[1]) || 0;
@@ -111,7 +113,6 @@
         let tRes = 0, tNon = 0, tAll = 0;
 
         data.forEach((row, index) => {
-            // Sirf A se G tak ke columns ko map karna
             let circleNo = row[1] || "-";
             let hlbNo = row[2] || "-";
             let name = row[3] || "-";
@@ -147,5 +148,4 @@
     }
 </script>
 </body>
-  </html>
-  
+</html>
