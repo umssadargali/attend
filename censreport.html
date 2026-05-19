@@ -44,7 +44,7 @@
     </div>
 
     <div class="analytics-grid" id="analyticsGrid" style="display: none;">
-        <div class="card"><span class="card-title">Total Records</span><span class="card-value" id="totalRecords">0</span></div>
+        <div class="card"><span class="card-title">Total Lines</span><span class="card-value" id="totalRecords">0</span></div>
         <div class="card" style="border-left-color: #16a34a;"><span class="card-title">Total Residential</span><span class="card-value" id="totalRes">0</span></div>
         <div class="card" style="border-left-color: #ea580c;"><span class="card-title">Total Non-Residential</span><span class="card-value" id="totalNonRes">0</span></div>
         <div class="card" style="border-left-color: #9333ea;"><span class="card-title">Total Alloted Houses</span><span class="card-value" id="totalAlloted">0</span></div>
@@ -137,7 +137,7 @@
             tableBody.appendChild(tr);
         });
 
-        document.getElementById("totalLine").innerText = data.length;
+        document.getElementById("totalRecords").innerText = data.length;
         document.getElementById("totalRes").innerText = tRes;
         document.getElementById("totalNonRes").innerText = tNon;
         document.getElementById("totalAlloted").innerText = tAll;
