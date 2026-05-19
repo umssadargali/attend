@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report by Supervisor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f0f4f8;
+            color: #102a43;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(16, 42, 67, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #0b69a3;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #627d98;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334e68;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #102a43;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #0b69a3;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(11, 105, 163, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #0b69a3 0%, #074e79 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(11, 105, 163, 0.25);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(11, 105, 163, 0.35);
+        }
+
+        .btn-submit:disabled {
+            background: #9fb3c8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Message Box Styling */
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+        }
+
+        .success {
+            background-color: #def7ec;
+            color: #03543f;
+            border: 1px solid #bdf2d5;
+        }
+
+        .error {
+            background-color: #fde8e8;
+            color: #9b1c1c;
+            border: 1px solid #fabdbe;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="header">
+        <h1>Report by Supervisor</h1>
+        <p>Till Date - 31.5.2026</p>
+    </div>
+
+    <form id="reportForm">
+        <div class="form-group">
+            <label for="circleNo">Circle No *</label>
+            <select id="circleNo" name="circleNo" required>
+                <option value="">-- Chunein / Select --</option>
+                <script>
+                    // 1 se 100 tak dropdown dynamic generate karne ke liye loop
+                    for(let i = 1; i <= 100; i++) {
+                        document.write(`<option value="${i}">${i}</option>`);
+                    }
+                </script>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="hlbNo">HLB No</label>
+            <input type="text" id="hlbNo" name="hlbNo" placeholder="Text ya Number enter karein">
+        </div>
+
+        <div class="form-group">
+            <label for="enumeratorName">Enumerator's Name</label>
+            <input type="text" id="enumeratorName" name="enumeratorName" placeholder="Naam likhein">
+        </div>
+
+        <div class="form-group">
+            <label for="residentialHouse">Residential House</label>
+            <input type="text" id="residentialHouse" name="residentialHouse" placeholder="Details ya sankhya">
+        </div>
+
+        <div class="form-group">
+            <label for="nonResidentialHouse">Non-Residential House</label>
+            <input type="text" id="nonResidentialHouse" name="nonResidentialHouse" placeholder="Details ya sankhya">
+        </div>
+
+        <div class="form-group">
+            <label for="totalAllotedHouse">Total Alloted House</label>
+            <input type="text" id="totalAllotedHouse" name="totalAllotedHouse" placeholder="Total sankhya ya details">
+        </div>
+
+        <div class="form-group">
+            <label for="remarks">Remarks</label>
+            <input type="text" id="remarks" name="remarks" placeholder="Koi tippani ya remarks">
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Submit Report</button>
+    </form>
+
+    <div id="msgBox" class="message"></div>
+</div>
+
+<script>
+    // [IMP] Yahan apna Google Apps Script se copy kiya gaya Web App URL paste karein
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8IVFitkAopqsQN4QDAME7tF8Gyjq6kbGUCGz6h_LykIsN3W8FMBr2SLYrB2oeOdNXRw/exec";
+
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Default submit refresh rokne ke liye
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const msgBox = document.getElementById('msgBox');
+        
+        // Button disable aur loading state active
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Submitting Data...";
+        msgBox.style.display = "none";
+
+        // Form data collect karna
+        const formData = new FormData(this);
+        
+        // Google Sheet backend par data send karna
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === "success") {
+                msgBox.className = "message success";
+                msgBox.innerText = "Data successfully Sheet me save ho gaya hai!";
+                msgBox.style.display = "block";
+                document.getElementById('reportForm').reset(); // Form clear karna
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            msgBox.className = "message error";
+            msgBox.innerText = "Error: Data save nahi hua. Kripya check karein. " + error.message;
+            msgBox.style.display = "block";
+        })
+        .finally(() => {
+            // Button wapas active karna
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Submit Report";
+        });
+    });
+</script>
+
+</body>
+</html>
