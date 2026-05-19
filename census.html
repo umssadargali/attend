@@ -138,8 +138,8 @@
 
 <div class="form-container">
     <div class="header">
-        <h1>Report by Supervisor</h1>
-        <p>Till Date - 31.5.2026</p>
+        <h1>भारत की जनगणना -2027</h1>
+        <p>पर्यवेक्षकों द्वारा वास्तविक मकानों की संख्यात्मक प्रतिवेदन</p>
     </div>
 
     <form id="reportForm">
@@ -148,8 +148,8 @@
             <select id="circleNo" name="circleNo" required>
                 <option value="">-- Chunein / Select --</option>
                 <script>
-                    // 1 se 100 tak dropdown dynamic generate karne ke liye loop
-                    for(let i = 1; i <= 100; i++) {
+                    // 1 se 92 tak dropdown dynamic generate karne ke liye loop
+                    for(let i = 1; i <= 92; i++) {
                         document.write(`<option value="${i}">${i}</option>`);
                     }
                 </script>
@@ -162,27 +162,27 @@
         </div>
 
         <div class="form-group">
-            <label for="enumeratorName">Enumerator's Name</label>
+            <label for="enumeratorName">प्रगणक का नाम</label>
             <input type="text" id="enumeratorName" name="enumeratorName" placeholder="Naam likhein">
         </div>
 
         <div class="form-group">
-            <label for="residentialHouse">Residential House</label>
+            <label for="residentialHouse">आवासीय मकानों की संख्या</label>
             <input type="text" id="residentialHouse" name="residentialHouse" placeholder="Details ya sankhya">
         </div>
 
         <div class="form-group">
-            <label for="nonResidentialHouse">Non-Residential House</label>
+            <label for="nonResidentialHouse">गैर-आवासीय मकानों की संख्या</label>
             <input type="text" id="nonResidentialHouse" name="nonResidentialHouse" placeholder="Details ya sankhya">
         </div>
 
         <div class="form-group">
-            <label for="totalAllotedHouse">Total Alloted House</label>
+            <label for="totalAllotedHouse">कुल आवंटित मकानों की संख्या</label>
             <input type="text" id="totalAllotedHouse" name="totalAllotedHouse" placeholder="Total sankhya ya details">
         </div>
 
         <div class="form-group">
-            <label for="remarks">Remarks</label>
+            <label for="remarks">अभियुक्ति( कार्य पूर्ण-हां या ना)</label>
             <input type="text" id="remarks" name="remarks" placeholder="Koi tippani ya remarks">
         </div>
 
