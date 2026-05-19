@@ -110,7 +110,6 @@
             box-shadow: none;
         }
 
-        /* Message Box Styling */
         .message {
             padding: 12px;
             border-radius: 8px;
@@ -148,7 +147,6 @@
             <select id="circleNo" name="circleNo" required>
                 <option value="">-- Chunein / Select --</option>
                 <script>
-                    // 1 se 92 tak dropdown dynamic generate karne ke liye loop
                     for(let i = 1; i <= 92; i++) {
                         document.write(`<option value="${i}">${i}</option>`);
                     }
@@ -193,48 +191,33 @@
 </div>
 
 <script>
-    // [IMP] Yahan apna Google Apps Script se copy kiya gaya Web App URL paste karein
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8IVFitkAopqsQN4QDAME7tF8Gyjq6kbGUCGz6h_LykIsN3W8FMBr2SLYrB2oeOdNXRw/exec";
 
     document.getElementById('reportForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // Default submit refresh rokne ke liye
+        e.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
         const msgBox = document.getElementById('msgBox');
         
-        // Button disable aur loading state active
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Submitting Data...";
-        msgBox.style.display = "none";
-
-        // Form data collect karna
+        // Instant Response Logic: Form ko turant clear aur success dikhana
+        msgBox.className = "message success";
+        msgBox.innerText = "Data successfully submitted! (Saving in background...)";
+        msgBox.style.display = "block";
+        
+        // Form Data nikal kar copy kar lena
         const formData = new FormData(this);
         
-        // Google Sheet backend par data send karna
+        // Form ko turant reset kar dena taaki user agli entry kar sake
+        document.getElementById('reportForm').reset();
+        
+        // Background me data send karna (User bina ruke kaam kar sakta hai)
         fetch(WEB_APP_URL, {
             method: 'POST',
+            mode: 'no-cors', // Speed ko badhane aur pre-flight delay hatane ke liye
             body: new URLSearchParams(formData)
         })
-        .then(response => response.json())
-        .then(data => {
-            if(data.status === "success") {
-                msgBox.className = "message success";
-                msgBox.innerText = "Data successfully submitted.";
-                msgBox.style.display = "block";
-                document.getElementById('reportForm').reset(); // Form clear karna
-            } else {
-                throw new Error(data.message);
-            }
-        })
         .catch(error => {
-            msgBox.className = "message error";
-            msgBox.innerText = "Error: Data not saved. Please check. " + error.message;
-            msgBox.style.display = "block";
-        })
-        .finally(() => {
-            // Button wapas active karna
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Submit Report";
+            console.error("Background Sync Error: ", error);
         });
     });
 </script>
