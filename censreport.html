@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Census 2027 - Live Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; padding: 15px; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; }
+        
+        .dashboard-header { 
+            background: linear-gradient(135deg, #0b69a3 0%, #074e79 100%); 
+            color: white; padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 25px; 
+            box-shadow: 0 10px 25px rgba(11, 105, 163, 0.15);
+        }
+        .dashboard-header h1 { font-size: 24px; font-weight: 700; }
+        .dashboard-header p { font-size: 14px; color: #e0f2fe; margin-top: 6px; }
+        
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #2563eb; display: flex; flex-direction: column; }
+        .card-title { font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600; }
+        .card-value { font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 5px; }
+        
+        .table-responsive { background: white; border-radius: 16px; padding: 15px; overflow-x: auto; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th { background-color: #f1f5f9; color: #334155; padding: 14px 16px; font-weight: 600; font-size: 12px; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
+        td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        tr:hover { background-color: #f8fafc; }
+        
+        td:nth-child(2) { font-weight: 700; color: #0b69a3; }
+        .badge { background-color: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #475569; }
+        
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #0b69a3; border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="dashboard-header">
+        <h1>भारत की जनगणना - 2027 Live Report</h1>
+        <p>बिना स्क्रिप्ट बदले सुरक्षित विवरण (Circle No: Ascending Order | Columns A to G)</p>
+    </div>
+
+    <div class="analytics-grid" id="analyticsGrid" style="display: none;">
+        <div class="card"><span class="card-title">Total Records</span><span class="card-value" id="totalRecords">0</span></div>
+        <div class="card" style="border-left-color: #16a34a;"><span class="card-title">Total Residential</span><span class="card-value" id="totalRes">0</span></div>
+        <div class="card" style="border-left-color: #ea580c;"><span class="card-title">Total Non-Residential</span><span class="card-value" id="totalNonRes">0</span></div>
+        <div class="card" style="border-left-color: #9333ea;"><span class="card-title">Total Alloted Houses</span><span class="card-value" id="totalAlloted">0</span></div>
+    </div>
+
+    <div class="table-responsive">
+        <div id="loading"><div class="loader"></div><p style="text-align:center; color:#64748b; font-weight: 500;">Sheet se live data fetch ho raha hai...</p></div>
+        <table id="reportTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Sl No</th>
+                    <th>Circle No</th>
+                    <th>HLB No</th>
+                    <th>Enumerator's Name</th>
+                    <th>Residential House</th>
+                    <th>Non-Residential House</th>
+                    <th>Total Alloted House</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // [ZAROORI] Yahan apna Publish to Web wala CSV link paste karein
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU50CYI-fSKJ8sK3kf23GaTSzRvigKqMbQQ_xA1SLjqyJlBOH1Ne1R91FZV4kcasppaMlK8m-SzJEK/pub?output=csv";
+
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch(SHEET_CSV_URL)
+            .then(response => response.text())
+            .then(csvText => {
+                let lines = csvText.split("\n");
+                let rows = [];
+                
+                // Rows filter karna (Header hatakar aur khali rows ko nikal kar)
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === "") continue;
+                    let parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    let mapped = parts.map(p => p.replace(/^"|"$/g, '').trim());
+                    
+                    // Agar Circle No (Index 1) khali nahi hai to hi add karein
+                    if(mapped[1] && mapped[1] !== "") {
+                        rows.push(mapped);
+                    }
+                }
+
+                // Circle No (Column B / Index 1) ke anusar Ascending Order me sorting
+                rows.sort((a, b) => {
+                    let numA = parseInt(a[1]) || 0;
+                    let numB = parseInt(b[1]) || 0;
+                    return numA - numB;
+                });
+
+                renderTable(rows);
+            })
+            .catch(err => {
+                document.getElementById('loading').innerHTML = `<p style="text-align:center; color:#dc2626; font-weight:600;">Data load karne me samasya aayi. Kripya check karein.</p>`;
+            });
+    });
+
+    function renderTable(data) {
+        const tableBody = document.getElementById("tableBody");
+        let tRes = 0, tNon = 0, tAll = 0;
+
+        data.forEach((row, index) => {
+            // Sirf A se G tak ke columns ko map karna
+            let circleNo = row[1] || "-";
+            let hlbNo = row[2] || "-";
+            let name = row[3] || "-";
+            let resHouse = row[4] || 0;
+            let nonResHouse = row[5] || 0;
+            let totalHouse = row[6] || 0;
+
+            tRes += parseInt(resHouse) || 0;
+            tNon += parseInt(nonResHouse) || 0;
+            tAll += parseInt(totalHouse) || 0;
+
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><span class="badge" style="background-color: #e0f2fe; color: #0369a1;">${circleNo}</span></td>
+                <td>${hlbNo}</td>
+                <td style="font-weight: 500; color: #0f172a;">${name}</td>
+                <td><span class="badge">${resHouse}</span></td>
+                <td><span class="badge">${nonResHouse}</span></td>
+                <td><span class="badge" style="background-color: #fef3c7; color: #92400e;">${totalHouse}</span></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        document.getElementById("totalRecords").innerText = data.length;
+        document.getElementById("totalRes").innerText = tRes;
+        document.getElementById("totalNonRes").innerText = tNon;
+        document.getElementById("totalAlloted").innerText = tAll;
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("analyticsGrid").style.display = "grid";
+        document.getElementById("reportTable").style.display = "table";
+    }
+</script>
+</body>
+  </html>
+  
