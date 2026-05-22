@@ -18,6 +18,35 @@
         .dashboard-header h1 { font-size: 24px; font-weight: 700; }
         .dashboard-header p { font-size: 14px; color: #e0f2fe; margin-top: 6px; }
         
+        /* Action Bar for Export Button */
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        .btn-pdf {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-pdf:hover {
+            background-color: #b91c1c;
+            transform: translateY(-1px);
+        }
+        .btn-pdf:active {
+            transform: translateY(0);
+        }
+
         .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #2563eb; display: flex; flex-direction: column; }
         .card-title { font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600; }
@@ -30,10 +59,19 @@
         tr:hover { background-color: #f8fafc; }
         
         td:nth-child(2) { font-weight: 700; color: #0b69a3; }
-        .badge { background-color: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #475569; }
+        .badge { background-color: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #475569; display: inline-block; }
         
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #0b69a3; border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* PRINT STYLES: PDF me buttons chhupane ke liye aur colors barakar rkhne ke liye */
+        @media print {
+            body { padding: 0; background: white; }
+            .action-bar, #loading { display: none !important; }
+            .container { max-width: 100%; width: 100%; }
+            .table-responsive { box-shadow: none; border: none; padding: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -41,6 +79,13 @@
     <div class="dashboard-header">
         <h1>भारत की जनगणना - 2027_Live Report of Barsoi Block</h1>
         <p>Note :If any correction, contact to the office.</p>
+    </div>
+
+    <div class="action-bar" id="actionBar" style="display: none;">
+        <button class="btn-pdf" onclick="exportToPDF()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export to PDF
+        </button>
     </div>
 
     <div class="analytics-grid" id="analyticsGrid" style="display: none;">
@@ -87,7 +132,6 @@
                     let mapped = parts.map(p => p.replace(/^"|"$/g, '').trim());
                     
                     // VALIDATION: Sirf wahi row lein jiska Circle No (Index 1) ek valid number ho
-                    // Isse "Remarks" ya "Circle No" jaise text automatic gayab ho jayenge
                     let circleCheck = parseInt(mapped[1]);
                     if(mapped[1] && mapped[1] !== "" && !isNaN(circleCheck)) {
                         rows.push(mapped);
@@ -145,6 +189,12 @@
         document.getElementById("loading").style.display = "none";
         document.getElementById("analyticsGrid").style.display = "grid";
         document.getElementById("reportTable").style.display = "table";
+        document.getElementById("actionBar").style.display = "flex"; // Button data load hone ke baad dikhega
+    }
+
+    // PDF Export Function
+    function exportToPDF() {
+        window.print();
     }
 </script>
 </body>
